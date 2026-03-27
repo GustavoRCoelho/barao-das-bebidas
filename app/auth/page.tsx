@@ -3,25 +3,23 @@
 import { FormEvent, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { AlertCircle, Eye, EyeOff, Lock, Mail, ShieldCheck, User } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, ShieldCheck, User } from "lucide-react";
+import { toast } from "sonner";
 
 export default function AuthPage() {
   const router = useRouter();
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingCadastro, setLoadingCadastro] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [mostrarSenhaLogin, setMostrarSenhaLogin] = useState(false);
   const [mostrarSenhaCadastro, setMostrarSenhaCadastro] = useState(false);
 
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
     setLoadingLogin(true);
 
     const form = new FormData(event.currentTarget);
@@ -46,7 +44,7 @@ export default function AuthPage() {
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Falha ao realizar login.";
-      setError(message);
+      toast.error(message);
     } finally {
       setLoadingLogin(false);
     }
@@ -54,14 +52,23 @@ export default function AuthPage() {
 
   async function cadastrar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
-    setLoadingCadastro(true);
 
     const form = new FormData(event.currentTarget);
+    const senha = String(form.get("senhaCadastro") ?? "");
+    const confirmarSenha = String(form.get("confirmarSenhaCadastro") ?? "");
+
+    if (senha !== confirmarSenha) {
+      const mensagem = "As senhas nao conferem.";
+      toast.error(mensagem);
+      return;
+    }
+
+    setLoadingCadastro(true);
+
     const payload = {
       nome: String(form.get("nome") ?? ""),
       email: String(form.get("emailCadastro") ?? ""),
-      senha: String(form.get("senhaCadastro") ?? ""),
+      senha,
     };
 
     try {
@@ -81,7 +88,7 @@ export default function AuthPage() {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Falha ao realizar cadastro.";
-      setError(message);
+      toast.error(message);
     } finally {
       setLoadingCadastro(false);
     }
@@ -144,14 +151,6 @@ export default function AuthPage() {
                 />
               </div>
             </div>
-
-            {error ? (
-              <Alert variant="destructive">
-                <AlertCircle className="size-4" />
-                <AlertTitle>Erro de autenticação</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            ) : null}
 
             <Tabs defaultValue="login" className="space-y-3">
               <TabsList className="grid w-full grid-cols-2 bg-muted text-muted-foreground ring-1 ring-border">
@@ -261,6 +260,33 @@ export default function AuthPage() {
                         minLength={6}
                         required
                         placeholder="Mínimo de 6 caracteres"
+                        className="h-11 border-border bg-background/80 pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/60"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarSenhaCadastro((v) => !v)}
+                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label={mostrarSenhaCadastro ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {mostrarSenhaCadastro ? (
+                          <EyeOff className="size-4" />
+                        ) : (
+                          <Eye className="size-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="confirmarSenhaCadastro">Confirmar senha</Label>
+                    <div className="relative">
+                      <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="confirmarSenhaCadastro"
+                        name="confirmarSenhaCadastro"
+                        type={mostrarSenhaCadastro ? "text" : "password"}
+                        minLength={6}
+                        required
+                        placeholder="Repita sua senha"
                         className="h-11 border-border bg-background/80 pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/60"
                       />
                       <button
