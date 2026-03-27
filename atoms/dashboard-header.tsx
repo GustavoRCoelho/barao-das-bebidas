@@ -26,7 +26,6 @@ export function DashboardHeader({
       <div>
         <div className="text-primary flex items-center gap-2 text-xs font-medium">
           <Home className="size-3" />
-          <span className="tracking-wider uppercase">Painel Operacional</span>
         </div>
         <h1
           className="app-heading-ornate mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
