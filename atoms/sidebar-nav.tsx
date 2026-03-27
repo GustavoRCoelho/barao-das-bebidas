@@ -84,9 +84,6 @@ export function SidebarNav({
               <h2 className="truncate text-sm font-bold tracking-tight text-foreground">
                 Barão das Bebidas
               </h2>
-              <p className="text-[10px] tracking-widest text-muted-foreground uppercase">
-                Dashboard Pro
-              </p>
             </div>
           )}
         </div>

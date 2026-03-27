@@ -28,7 +28,11 @@ export function DashboardHeader({
           <Home className="size-3" />
           <span className="tracking-wider uppercase">Painel Operacional</span>
         </div>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground">
+        <h1
+          className="app-heading-ornate mt-1 text-3xl font-bold tracking-tight text-foreground"
+          data-ornament-left="f"
+          data-ornament-right="g"
+        >
           {abaAtiva === "cardapio"
             ? "Cardápio de Produtos"
             : abaAtiva === "gerenciar-cardapio"

@@ -105,27 +105,24 @@ export default function AuthPage() {
             className="object-cover"
           />
           <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/45 to-black/70 dark:from-black/40 dark:via-black/55 dark:to-black/75" />
-          <div className="absolute inset-x-0 bottom-0 p-10">
-            <div className="mb-5 h-16 w-16 overflow-hidden rounded-xl border border-yellow-400/50 bg-black/50 p-1">
-              <Image
-                src="/logo.png"
-                alt="Logo Barão das Bebidas"
-                width={64}
-                height={64}
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <h1 className="text-4xl font-black tracking-tight text-yellow-300">Barão das Bebidas</h1>
-            <p className="mt-2 max-w-md text-sm text-yellow-100/85">
-              Plataforma de pedidos com acompanhamento em tempo real para clientes e equipe.
+          <div className="absolute inset-x-0 bottom-0 p-10 text-center">
+            <h1
+              className="app-heading-ornate app-heading-ornate-login text-5xl font-black tracking-tight text-yellow-300 md:text-6xl"
+              data-ornament-left="f"
+              data-ornament-right="g"
+            >
+              Barão das Bebidas
+            </h1>
+            <p className="mx-auto mt-2 max-w-md text-center text-sm text-yellow-100/85">
+              Peça suas bebidas com rapidez, acompanhe cada etapa do pedido e receba tudo no seu balcão sem sair da mesa.
             </p>
           </div>
         </section>
 
         <section className="relative flex items-center justify-center bg-card/80 p-6 sm:p-10 md:p-14">
           <div className="w-full max-w-md space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 overflow-hidden rounded-lg border border-border bg-card p-1">
+            <div className="flex justify-center">
+              <div className="h-28 w-28 overflow-hidden rounded-lg border border-border bg-card p-1">
                 <Image
                   src="/logo.png"
                   alt="Logo Barão das Bebidas"
@@ -133,12 +130,6 @@ export default function AuthPage() {
                   height={64}
                   className="h-full w-full object-contain"
                 />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold tracking-wide">Acessar painel</h2>
-                <p className="text-sm text-muted-foreground">
-                  Faça login para acessar os pedidos ou crie seu usuário.
-                </p>
               </div>
             </div>
 

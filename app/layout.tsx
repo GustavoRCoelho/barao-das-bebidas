@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -11,6 +12,30 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const tabernaHeading = localFont({
+  src: [
+    {
+      path: "../public/fonts/Taberna/TabernaSerif-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-taberna-heading",
+  display: "swap",
+});
+
+const tabernaExtras = localFont({
+  src: [
+    {
+      path: "../public/fonts/Taberna/Taberna-Extras.ttf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-taberna-extras",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -32,7 +57,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${tabernaHeading.variable} ${tabernaExtras.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>{children}</ThemeProvider>

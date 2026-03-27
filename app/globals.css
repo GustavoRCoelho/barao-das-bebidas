@@ -9,7 +9,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-taberna-heading);
+  --font-heading-extras: var(--font-taberna-extras);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -127,6 +128,12 @@
   html {
     @apply font-sans;
   }
+  h1,
+  h2 {
+    @apply font-heading;
+    color: #facc15 !important;
+    text-shadow: 2px 2px 0 #000;
+  }
 }
 
 @layer components {
@@ -156,5 +163,38 @@
 
   .app-input {
     @apply border-border bg-background/80;
+  }
+
+  .app-heading-ornate {
+    @apply inline-flex items-center gap-3;
+  }
+
+  .app-heading-ornate::before,
+  .app-heading-ornate::after {
+    font-family: var(--font-heading-extras), var(--font-heading);
+    font-size: 0.8em;
+    line-height: 1;
+    opacity: 0.9;
+  }
+
+  .app-heading-ornate::before {
+    content: attr(data-ornament-left);
+  }
+
+  .app-heading-ornate::after {
+    content: attr(data-ornament-right);
+  }
+
+  .app-heading-ornate-login::before,
+  .app-heading-ornate-login::after {
+    font-size: 1.3em;
+  }
+
+  .app-heading-ornate-login::before {
+    content: attr(data-ornament-left);
+  }
+
+  .app-heading-ornate-login::after {
+    content: attr(data-ornament-right);
   }
 }
