@@ -8,13 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Lock, Mail, ShieldCheck, User } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { AlertCircle, Eye, EyeOff, Lock, Mail, ShieldCheck, User } from "lucide-react";
 
 export default function AuthPage() {
   const router = useRouter();
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingCadastro, setLoadingCadastro] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mostrarSenhaLogin, setMostrarSenhaLogin] = useState(false);
+  const [mostrarSenhaCadastro, setMostrarSenhaCadastro] = useState(false);
 
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -85,9 +88,12 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-yellow-100">
-      <div className="pointer-events-none absolute -top-40 -left-20 h-96 w-96 rounded-full bg-yellow-400/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-yellow-300/10 blur-3xl" />
+    <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
+      <div className="pointer-events-none absolute -top-40 -left-20 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
 
       <div className="relative grid min-h-screen w-full md:grid-cols-[1.05fr_0.95fr]">
         <section className="relative hidden overflow-hidden md:block">
@@ -98,7 +104,7 @@ export default function AuthPage() {
             priority
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/45 to-black/70" />
+          <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/45 to-black/70 dark:from-black/40 dark:via-black/55 dark:to-black/75" />
           <div className="absolute inset-x-0 bottom-0 p-10">
             <div className="mb-5 h-16 w-16 overflow-hidden rounded-xl border border-yellow-400/50 bg-black/50 p-1">
               <Image
@@ -116,10 +122,10 @@ export default function AuthPage() {
           </div>
         </section>
 
-        <section className="relative flex items-center justify-center bg-neutral-950/80 p-6 sm:p-10 md:p-14">
+        <section className="relative flex items-center justify-center bg-card/80 p-6 sm:p-10 md:p-14">
           <div className="w-full max-w-md space-y-6">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 overflow-hidden rounded-lg border border-yellow-400/40 bg-black/40 p-1">
+              <div className="h-12 w-12 overflow-hidden rounded-lg border border-border bg-card p-1">
                 <Image
                   src="/logo.png"
                   alt="Logo Barão das Bebidas"
@@ -130,7 +136,7 @@ export default function AuthPage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold tracking-wide">Acessar painel</h2>
-                <p className="text-sm text-yellow-100/70">
+                <p className="text-sm text-muted-foreground">
                   Faça login para acessar os pedidos ou crie seu usuário.
                 </p>
               </div>
@@ -145,111 +151,131 @@ export default function AuthPage() {
             ) : null}
 
             <Tabs defaultValue="login" className="space-y-3">
-              <TabsList className="w-full bg-yellow-400/10 text-yellow-100/80 ring-1 ring-yellow-400/20">
+              <TabsList className="w-full bg-muted text-muted-foreground ring-1 ring-border">
                 <TabsTrigger
                   value="login"
-                  className="data-active:bg-yellow-400 data-active:text-black"
+                  className="data-active:bg-primary data-active:text-primary-foreground"
                 >
                   Login
                 </TabsTrigger>
                 <TabsTrigger
                   value="cadastro"
-                  className="data-active:bg-yellow-300 data-active:text-black"
+                  className="data-active:bg-primary data-active:text-primary-foreground"
                 >
                   Cadastro
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
-                <form className="space-y-4 rounded-2xl border border-yellow-400/15 bg-black/35 p-4" onSubmit={login}>
+                <form className="space-y-4 rounded-2xl border border-border bg-card/70 p-4" onSubmit={login}>
                   <div className="space-y-1.5">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
-                      <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="email"
                         name="email"
                         type="email"
                         required
                         placeholder="voce@barao.com"
-                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                        className="h-11 border-border bg-background/80 pl-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/60"
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="senha">Senha</Label>
                     <div className="relative">
-                      <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="senha"
                         name="senha"
-                        type="password"
+                        type={mostrarSenhaLogin ? "text" : "password"}
                         required
                         placeholder="••••••••"
-                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                        className="h-11 border-border bg-background/80 pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/60"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarSenhaLogin((v) => !v)}
+                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label={mostrarSenhaLogin ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {mostrarSenhaLogin ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
                     </div>
                   </div>
                   <Button
-                    className="h-11 w-full bg-yellow-400 font-semibold tracking-wide text-black hover:bg-yellow-300"
+                    className="h-11 w-full bg-primary font-semibold tracking-wide text-primary-foreground hover:bg-primary/90"
                     type="submit"
                     disabled={loadingLogin}
                   >
                     {loadingLogin ? "Entrando..." : "Entrar"}
                   </Button>
-                  <div className="flex items-center gap-2 text-xs text-yellow-100/70">
-                    <ShieldCheck className="size-4 text-yellow-300" />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ShieldCheck className="size-4 text-primary" />
                     Sessão segura e senha criptografada.
                   </div>
                 </form>
               </TabsContent>
 
               <TabsContent value="cadastro">
-                <form className="space-y-4 rounded-2xl border border-yellow-400/15 bg-black/35 p-4" onSubmit={cadastrar}>
+                <form className="space-y-4 rounded-2xl border border-border bg-card/70 p-4" onSubmit={cadastrar}>
                   <div className="space-y-1.5">
                     <Label htmlFor="nome">Nome</Label>
                     <div className="relative">
-                      <User className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <User className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="nome"
                         name="nome"
                         required
                         placeholder="Seu nome completo"
-                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                        className="h-11 border-border bg-background/80 pl-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/60"
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="emailCadastro">Email</Label>
                     <div className="relative">
-                      <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="emailCadastro"
                         name="emailCadastro"
                         type="email"
                         required
                         placeholder="voce@barao.com"
-                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                        className="h-11 border-border bg-background/80 pl-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/60"
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="senhaCadastro">Senha</Label>
                     <div className="relative">
-                      <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="senhaCadastro"
                         name="senhaCadastro"
-                        type="password"
+                        type={mostrarSenhaCadastro ? "text" : "password"}
                         minLength={6}
                         required
                         placeholder="Mínimo de 6 caracteres"
-                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                        className="h-11 border-border bg-background/80 pl-10 pr-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-ring/60"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarSenhaCadastro((v) => !v)}
+                        className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label={mostrarSenhaCadastro ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {mostrarSenhaCadastro ? (
+                          <EyeOff className="size-4" />
+                        ) : (
+                          <Eye className="size-4" />
+                        )}
+                      </button>
                     </div>
                   </div>
                   <Button
-                    className="h-11 w-full bg-yellow-300 font-semibold tracking-wide text-black hover:bg-yellow-200"
+                    className="h-11 w-full bg-primary font-semibold tracking-wide text-primary-foreground hover:bg-primary/90"
                     type="submit"
                     disabled={loadingCadastro}
                   >

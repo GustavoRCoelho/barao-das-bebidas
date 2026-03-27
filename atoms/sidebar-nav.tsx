@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { LogOut, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 
 type MenuItem = {
@@ -156,6 +157,8 @@ export function SidebarNav({
             </div>
           </div>
         ) : null}
+
+        {!compacto ? <ThemeToggle className="w-full justify-start gap-2" /> : <ThemeToggle className="w-full justify-center px-0" />}
 
         <Button
           variant="ghost"
