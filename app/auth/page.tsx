@@ -1,20 +1,14 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Martini, ShieldCheck } from "lucide-react";
+import { AlertCircle, Lock, Mail, ShieldCheck, User } from "lucide-react";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -91,124 +85,182 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-b from-slate-950 via-indigo-950 to-slate-900 p-4 text-slate-100">
-      <div className="pointer-events-none absolute -top-36 h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-36 right-0 h-80 w-80 rounded-full bg-violet-500/20 blur-3xl" />
-      <Card className="w-full max-w-md border-white/10 bg-white/5 text-slate-100 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Martini className="size-5 text-cyan-300" />
-            Barão das Bebidas
-          </CardTitle>
-          <CardDescription className="text-slate-300">
-            Faça login para acessar os pedidos ou crie seu usuário.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {error ? (
-            <Alert variant="destructive">
-              <AlertCircle className="size-4" />
-              <AlertTitle>Erro de autenticação</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : null}
+    <main className="relative min-h-screen overflow-hidden bg-black text-yellow-100">
+      <div className="pointer-events-none absolute -top-40 -left-20 h-96 w-96 rounded-full bg-yellow-400/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-yellow-300/10 blur-3xl" />
 
-          <Tabs defaultValue="login">
-            <TabsList className="w-full bg-white/10 text-slate-300 ring-1 ring-white/15">
-              <TabsTrigger
-                value="login"
-                className="data-active:bg-cyan-500 data-active:text-slate-950 dark:data-active:bg-cyan-500 dark:data-active:text-slate-950"
-              >
-                Login
-              </TabsTrigger>
-              <TabsTrigger
-                value="cadastro"
-                className="data-active:bg-violet-500 data-active:text-white dark:data-active:bg-violet-500 dark:data-active:text-white"
-              >
-                Cadastro
-              </TabsTrigger>
-            </TabsList>
+      <div className="relative grid min-h-screen w-full md:grid-cols-[1.05fr_0.95fr]">
+        <section className="relative hidden overflow-hidden md:block">
+          <Image
+            src="/barao-das-bebidas-store.webp"
+            alt="Loja Barão das Bebidas"
+            fill
+            priority
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/45 to-black/70" />
+          <div className="absolute inset-x-0 bottom-0 p-10">
+            <div className="mb-5 h-16 w-16 overflow-hidden rounded-xl border border-yellow-400/50 bg-black/50 p-1">
+              <Image
+                src="/logo.png"
+                alt="Logo Barão das Bebidas"
+                width={64}
+                height={64}
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <h1 className="text-4xl font-black tracking-tight text-yellow-300">Barão das Bebidas</h1>
+            <p className="mt-2 max-w-md text-sm text-yellow-100/85">
+              Plataforma de pedidos com acompanhamento em tempo real para clientes e equipe.
+            </p>
+          </div>
+        </section>
 
-            <TabsContent value="login">
-              <form className="space-y-3" onSubmit={login}>
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    className="border-white/20 bg-white/5 text-slate-100 placeholder:text-slate-400"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="senha">Senha</Label>
-                  <Input
-                    id="senha"
-                    name="senha"
-                    type="password"
-                    required
-                    className="border-white/20 bg-white/5 text-slate-100 placeholder:text-slate-400"
-                  />
-                </div>
-                <Button
-                  className="w-full bg-cyan-500 text-slate-950 hover:bg-cyan-400"
-                  type="submit"
-                  disabled={loadingLogin}
+        <section className="relative flex items-center justify-center bg-neutral-950/80 p-6 sm:p-10 md:p-14">
+          <div className="w-full max-w-md space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 overflow-hidden rounded-lg border border-yellow-400/40 bg-black/40 p-1">
+                <Image
+                  src="/logo.png"
+                  alt="Logo Barão das Bebidas"
+                  width={64}
+                  height={64}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold tracking-wide">Acessar painel</h2>
+                <p className="text-sm text-yellow-100/70">
+                  Faça login para acessar os pedidos ou crie seu usuário.
+                </p>
+              </div>
+            </div>
+
+            {error ? (
+              <Alert variant="destructive">
+                <AlertCircle className="size-4" />
+                <AlertTitle>Erro de autenticação</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            <Tabs defaultValue="login" className="space-y-3">
+              <TabsList className="w-full bg-yellow-400/10 text-yellow-100/80 ring-1 ring-yellow-400/20">
+                <TabsTrigger
+                  value="login"
+                  className="data-active:bg-yellow-400 data-active:text-black"
                 >
-                  {loadingLogin ? "Entrando..." : "Entrar"}
-                </Button>
-                <div className="flex items-center gap-2 text-xs text-slate-300">
-                  <ShieldCheck className="size-4 text-emerald-300" />
-                  Sessão segura e senha criptografada.
-                </div>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="cadastro">
-              <form className="space-y-3" onSubmit={cadastrar}>
-                <div className="space-y-1.5">
-                  <Label htmlFor="nome">Nome</Label>
-                  <Input
-                    id="nome"
-                    name="nome"
-                    required
-                    className="border-white/20 bg-white/5 text-slate-100 placeholder:text-slate-400"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="emailCadastro">Email</Label>
-                  <Input
-                    id="emailCadastro"
-                    name="emailCadastro"
-                    type="email"
-                    required
-                    className="border-white/20 bg-white/5 text-slate-100 placeholder:text-slate-400"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="senhaCadastro">Senha</Label>
-                  <Input
-                    id="senhaCadastro"
-                    name="senhaCadastro"
-                    type="password"
-                    minLength={6}
-                    required
-                    className="border-white/20 bg-white/5 text-slate-100 placeholder:text-slate-400"
-                  />
-                </div>
-                <Button
-                  className="w-full bg-violet-500 text-white hover:bg-violet-400"
-                  type="submit"
-                  disabled={loadingCadastro}
+                  Login
+                </TabsTrigger>
+                <TabsTrigger
+                  value="cadastro"
+                  className="data-active:bg-yellow-300 data-active:text-black"
                 >
-                  {loadingCadastro ? "Criando conta..." : "Criar conta"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+                  Cadastro
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="login">
+                <form className="space-y-4 rounded-2xl border border-yellow-400/15 bg-black/35 p-4" onSubmit={login}>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        placeholder="voce@barao.com"
+                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="senha">Senha</Label>
+                    <div className="relative">
+                      <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Input
+                        id="senha"
+                        name="senha"
+                        type="password"
+                        required
+                        placeholder="••••••••"
+                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    className="h-11 w-full bg-yellow-400 font-semibold tracking-wide text-black hover:bg-yellow-300"
+                    type="submit"
+                    disabled={loadingLogin}
+                  >
+                    {loadingLogin ? "Entrando..." : "Entrar"}
+                  </Button>
+                  <div className="flex items-center gap-2 text-xs text-yellow-100/70">
+                    <ShieldCheck className="size-4 text-yellow-300" />
+                    Sessão segura e senha criptografada.
+                  </div>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="cadastro">
+                <form className="space-y-4 rounded-2xl border border-yellow-400/15 bg-black/35 p-4" onSubmit={cadastrar}>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="nome">Nome</Label>
+                    <div className="relative">
+                      <User className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Input
+                        id="nome"
+                        name="nome"
+                        required
+                        placeholder="Seu nome completo"
+                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="emailCadastro">Email</Label>
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Input
+                        id="emailCadastro"
+                        name="emailCadastro"
+                        type="email"
+                        required
+                        placeholder="voce@barao.com"
+                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="senhaCadastro">Senha</Label>
+                    <div className="relative">
+                      <Lock className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-yellow-300/80" />
+                      <Input
+                        id="senhaCadastro"
+                        name="senhaCadastro"
+                        type="password"
+                        minLength={6}
+                        required
+                        placeholder="Mínimo de 6 caracteres"
+                        className="h-11 border-yellow-400/20 bg-black/30 pl-10 text-yellow-100 placeholder:text-yellow-100/40 focus-visible:ring-yellow-300/60"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    className="h-11 w-full bg-yellow-300 font-semibold tracking-wide text-black hover:bg-yellow-200"
+                    type="submit"
+                    disabled={loadingCadastro}
+                  >
+                    {loadingCadastro ? "Criando conta..." : "Criar conta"}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
