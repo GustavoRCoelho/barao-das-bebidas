@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import type { Pedido, PedidoStatus } from "@/lib/pedidos";
 import { MoreHorizontal, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 
 type PedidoTableProps = {
   pedidos: Pedido[];
@@ -43,6 +44,17 @@ export function PedidoTable({
   onStatusChange,
   onDelete,
 }: PedidoTableProps) {
+  const [busca, setBusca] = useState("");
+
+  const pedidosFiltrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+    if (!termo) return pedidos;
+    return pedidos.filter(
+      (pedido) =>
+        pedido.cliente.toLowerCase().includes(termo) || pedido.item.toLowerCase().includes(termo)
+    );
+  }, [pedidos, busca]);
+
   return (
     <Card className="app-panel">
       <CardHeader className="flex flex-row items-center justify-between border-b border-border">
@@ -52,7 +64,12 @@ export function PedidoTable({
         </div>
         <div className="relative w-64">
           <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input placeholder="Buscar cliente..." className="app-input h-9 pl-9 text-xs" />
+          <Input
+            placeholder="Buscar cliente ou produto..."
+            className="app-input h-9 pl-9 text-xs"
+            value={busca}
+            onChange={(event) => setBusca(event.target.value)}
+          />
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -73,7 +90,7 @@ export function PedidoTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pedidos.map((pedido) => (
+              {pedidosFiltrados.map((pedido) => (
                 <TableRow key={pedido.id} className="border-border transition-colors hover:bg-muted/30">
                   <TableCell className="py-4">
                     <p className="font-medium text-foreground">{pedido.cliente}</p>

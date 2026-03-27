@@ -165,7 +165,7 @@ export default function HomePage() {
 
   const menu = [
     { id: "cardapio" as const, label: "Cardápio", icon: BookOpen },
-    { id: "criar" as const, label: "Criar pedidos", icon: PlusCircle },
+    { id: "criar" as const, label: "Fazer pedidos", icon: PlusCircle },
     { id: "acompanhar" as const, label: "Acompanhar pedidos", icon: ClipboardList },
     ...(usuario?.role === "admin"
       ? [
