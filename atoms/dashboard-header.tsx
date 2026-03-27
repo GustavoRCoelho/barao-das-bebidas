@@ -24,9 +24,6 @@ export function DashboardHeader({
   return (
     <header className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
       <div>
-        <div className="text-primary flex items-center gap-2 text-xs font-medium">
-          <Home className="size-3" />
-        </div>
         <h1
           className="app-heading-ornate mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
           data-ornament-left="f"
