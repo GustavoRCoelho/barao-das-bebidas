@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Barão das Bebidas - Cadastro de Pedidos
 
-## Getting Started
+Sistema web com **Next.js (App Router)** + **TypeScript** + **Supabase** para cadastrar e acompanhar pedidos da distribuidora.
 
-First, run the development server:
+## Tecnologias
+
+- Next.js com App Router
+- TypeScript
+- API Routes no proprio projeto (`app/api`)
+- Supabase como banco de dados
+- Cadastro e login de usuario com senha protegida por hash (PBKDF2)
+- Niveis de permissao: `admin` e `cliente`
+
+## Configuracao
+
+1. Instale as dependencias:
+
+```bash
+npm install
+```
+
+2. Crie/atualize seu `.env.local` com:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
+```
+
+3. No painel do Supabase (SQL Editor), execute o script:
+
+- `supabase/schema.sql`
+
+4. Rode o projeto:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Endpoints da API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `POST /api/auth/register` - cadastro de usuario com hash de senha
+- `POST /api/auth/login` - login
+- `POST /api/auth/logout` - logout
+- `GET /api/auth/me` - usuario autenticado
+- `GET /api/pedidos` - lista pedidos
+- `POST /api/pedidos` - cria pedido
+- `PATCH /api/pedidos/:id` - atualiza pedido (ex: status)
+- `DELETE /api/pedidos/:id` - remove pedido
 
-## Learn More
+## Permissoes
 
-To learn more about Next.js, take a look at the following resources:
+- `cliente`: pode criar pedidos
+- `admin`: pode criar e gerenciar pedidos (listar, editar status e excluir)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+No cadastro, o primeiro usuario criado vira `admin`. Os proximos sao `cliente`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Observacao sobre seguranca
 
-## Deploy on Vercel
+O projeto esta configurado para funcionar com a chave publishable (anon).  
+As politicas de `supabase/schema.sql` permitem operacoes para o papel `anon` para facilitar o inicio rapido.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+As senhas **nao** sao salvas em texto puro: o backend usa PBKDF2 com salt aleatorio.
