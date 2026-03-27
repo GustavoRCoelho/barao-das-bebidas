@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Produto } from "@/lib/produtos";
+import { toast } from "sonner";
 
 type Props = {
   produtos: Produto[];
@@ -93,10 +94,11 @@ export function GerenciarCardapio({
       }
       onProdutoAtualizado(data as Produto);
       cancelarEdicao();
+      toast.success("Produto atualizado com sucesso.");
     } catch (error) {
       const mensagem =
         error instanceof Error ? error.message : "Falha inesperada ao atualizar produto.";
-      window.alert(mensagem);
+      toast.error(mensagem);
     } finally {
       setSalvando(false);
     }
@@ -127,10 +129,11 @@ export function GerenciarCardapio({
       setNovoPreco("0");
       setNovoEstoque("0");
       setNovaFoto("");
+      toast.success("Produto criado com sucesso.");
     } catch (error) {
       const mensagem =
         error instanceof Error ? error.message : "Falha inesperada ao criar produto.";
-      window.alert(mensagem);
+      toast.error(mensagem);
     } finally {
       setSalvando(false);
     }
@@ -151,10 +154,11 @@ export function GerenciarCardapio({
       if (editingId === id) {
         cancelarEdicao();
       }
+      toast.success("Produto excluido com sucesso.");
     } catch (error) {
       const mensagem =
         error instanceof Error ? error.message : "Falha inesperada ao excluir produto.";
-      window.alert(mensagem);
+      toast.error(mensagem);
     } finally {
       setSalvando(false);
     }

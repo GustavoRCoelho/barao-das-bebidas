@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export type UsuarioAdmin = {
   id: string;
@@ -67,9 +68,11 @@ export function useGerenciarUsuariosTab({ onError, isAdmin, activeTab }: Options
 
         const atualizado = data as UsuarioAdmin;
         setUsuarios((current) => current.map((u) => (u.id === id ? atualizado : u)));
+        toast.success("Perfil de usuario atualizado com sucesso.");
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Nao foi possivel atualizar o usuario.";
+        toast.error(message);
         onError(message);
       } finally {
         setUpdatingId(null);

@@ -5,6 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -52,6 +63,7 @@ function formatarTelefoneBR(value: string) {
 export function PedidoForm({ form, produtos, salvando, onChange, onSubmit }: PedidoFormProps) {
   const [buscaProduto, setBuscaProduto] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
+  const [confirmarAberto, setConfirmarAberto] = useState(false);
   const [itensSelecionados, setItensSelecionados] = useState<
     Record<string, { produto: Produto; quantidade: number }>
   >({});
@@ -137,6 +149,8 @@ export function PedidoForm({ form, produtos, salvando, onChange, onSubmit }: Ped
       ? "Nenhum item selecionado ainda. Abra o cardápio e monte um pedido caprichado."
       : `${itensSelecionadosArray.length} item(ns) selecionado(s), ${quantidadeTotalSelecionada} unidade(s)`;
 
+  const formId = "novo-pedido-form";
+
   return (
     <Card className="app-panel overflow-hidden">
       <CardHeader className="border-b border-border bg-muted/10">
@@ -155,7 +169,7 @@ export function PedidoForm({ form, produtos, salvando, onChange, onSubmit }: Ped
         </div>
       </CardHeader>
       <CardContent className="space-y-6 p-6">
-        <form className="grid grid-cols-1 gap-6 md:grid-cols-6" onSubmit={handleSubmit}>
+        <form id={formId} className="grid grid-cols-1 gap-6 md:grid-cols-6" onSubmit={handleSubmit}>
           <div className="space-y-4 md:col-span-3">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Seus dados para entrega
@@ -368,13 +382,75 @@ export function PedidoForm({ form, produtos, salvando, onChange, onSubmit }: Ped
             </FormGroup>
           </div>
 
-          <Button
-            type="submit"
-            className="mx-auto block h-12 w-full max-w-lg rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 md:col-span-6"
-            disabled={salvando}
-          >
-            {salvando ? "Enviando pedido..." : "Finalizar pedido agora"}
-          </Button>
+          <AlertDialog open={confirmarAberto} onOpenChange={setConfirmarAberto}>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                className="mx-auto block h-12 w-full max-w-lg rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 md:col-span-6"
+                disabled={salvando}
+              >
+                {salvando ? "Enviando pedido..." : "Finalizar pedido agora"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="max-h-[85vh] overflow-auto">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmar envio do pedido?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Confira os dados antes de finalizar.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <div className="space-y-3 text-sm">
+                <div className="rounded-lg border border-border bg-muted/20 p-3">
+                  <p>
+                    <span className="font-medium">Cliente:</span> {form.cliente || "-"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Telefone:</span> {form.telefone || "-"}
+                  </p>
+                  <p>
+                    <span className="font-medium">Endereço:</span> {form.endereco || "-"}
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border bg-muted/20 p-3">
+                  <p className="mb-2 font-medium">Itens selecionados</p>
+                  {itensSelecionadosArray.length === 0 ? (
+                    <p className="text-muted-foreground">Nenhum item selecionado.</p>
+                  ) : (
+                    <ul className="space-y-1 text-sm">
+                      {itensSelecionadosArray.map((item) => (
+                        <li key={item.produto.id}>
+                          {item.produto.nome} x{item.quantidade}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
+                  <p>
+                    <span className="font-medium">Quantidade total:</span> {quantidadeTotalSelecionada}
+                  </p>
+                  <p>
+                    <span className="font-medium">Valor total:</span> R$ {valorTotalCalculado.toFixed(2)}
+                  </p>
+                  <p>
+                    <span className="font-medium">Observações:</span> {form.observacao || "-"}
+                  </p>
+                </div>
+              </div>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel>Voltar</AlertDialogCancel>
+                <AlertDialogAction asChild>
+                  <Button type="submit" form={formId} disabled={salvando}>
+                    {salvando ? "Enviando pedido..." : "Confirmar pedido"}
+                  </Button>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </form>
       </CardContent>
     </Card>

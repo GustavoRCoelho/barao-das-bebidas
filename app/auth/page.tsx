@@ -120,7 +120,19 @@ export default function AuthPage() {
         </section>
 
         <section className="relative flex items-center justify-center bg-card/80 p-4 sm:p-8 md:p-14">
-          <div className="w-full max-w-md space-y-6">
+          <div className="w-full max-w-md space-y-5 sm:space-y-6">
+            <div className="text-center md:hidden">
+              <h1
+                className="app-heading-ornate text-4xl font-black tracking-tight"
+                data-ornament-left="f"
+                data-ornament-right="g"
+              >
+                Barão das Bebidas
+              </h1>
+              <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
+                Entre para fazer seus pedidos e acompanhar cada etapa da entrega.
+              </p>
+            </div>
             <div className="flex justify-center">
               <div className="h-20 w-20 overflow-hidden rounded-lg border border-border bg-card p-1 sm:h-24 sm:w-24 md:h-28 md:w-28">
                 <Image
@@ -142,7 +154,7 @@ export default function AuthPage() {
             ) : null}
 
             <Tabs defaultValue="login" className="space-y-3">
-              <TabsList className="w-full bg-muted text-muted-foreground ring-1 ring-border">
+              <TabsList className="grid w-full grid-cols-2 bg-muted text-muted-foreground ring-1 ring-border">
                 <TabsTrigger
                   value="login"
                   className="data-active:bg-primary data-active:text-primary-foreground"

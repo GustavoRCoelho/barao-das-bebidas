@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Pedido, PedidoStatus } from "@/lib/pedidos";
+import { toast } from "sonner";
 
 type Options = {
   onError: (message: string) => void;
@@ -53,9 +54,11 @@ export function useGerenciarPedidosTab({ onError, isAdmin, activeTab }: Options)
       setPedidos((current) =>
         current.map((pedido) => (pedido.id === id ? (data as Pedido) : pedido))
       );
+      toast.success(`Status atualizado para ${statusLabel(status)}.`);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Nao foi possivel atualizar status.";
+      toast.error(message);
       onError(message);
     }
   }
@@ -68,11 +71,20 @@ export function useGerenciarPedidosTab({ onError, isAdmin, activeTab }: Options)
         throw new Error(data.erro ?? "Falha ao excluir pedido.");
       }
       setPedidos((current) => current.filter((pedido) => pedido.id !== id));
+      toast.success("Pedido excluido com sucesso.");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Nao foi possivel excluir pedido.";
+      toast.error(message);
       onError(message);
     }
+  }
+
+  function statusLabel(status: PedidoStatus) {
+    if (status === "pendente") return "Pendente";
+    if (status === "separacao") return "Em separacao";
+    if (status === "enviado") return "Enviado";
+    return "Entregue";
   }
 
   const totalEmAberto = useMemo(

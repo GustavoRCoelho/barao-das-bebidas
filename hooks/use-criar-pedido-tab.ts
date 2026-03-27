@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Pedido, PedidoItemSelecionado } from "@/lib/pedidos";
 import type { PedidoFormState } from "@/atoms/pedido-form";
+import { toast } from "sonner";
 
 const initialFormState: PedidoFormState = {
   cliente: "",
@@ -29,8 +30,19 @@ export function useCriarPedidoTab({ onError, onSuccess }: Options) {
     itensSelecionados: PedidoItemSelecionado[]
   ) {
     event.preventDefault();
+    const cliente = form.cliente.trim();
+    const telefone = form.telefone.trim();
+    const endereco = form.endereco.trim();
+    if (!cliente || !telefone || !endereco) {
+      const mensagem = "Preencha cliente, telefone e endereco para finalizar o pedido.";
+      toast.error(mensagem);
+      onError(mensagem);
+      return;
+    }
     if (itensSelecionados.length === 0) {
-      onError("Selecione ao menos um item no cardapio.");
+      const mensagem = "Selecione ao menos um item no cardapio.";
+      toast.error(mensagem);
+      onError(mensagem);
       return;
     }
     setSalvando(true);
@@ -45,9 +57,9 @@ export function useCriarPedidoTab({ onError, onSuccess }: Options) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          cliente: form.cliente,
-          telefone: form.telefone,
-          endereco: form.endereco,
+          cliente,
+          telefone,
+          endereco,
           item: itensDescricao,
           produto_id: itensSelecionados[0]?.produto_id,
           itens: itensSelecionados,
@@ -64,12 +76,14 @@ export function useCriarPedidoTab({ onError, onSuccess }: Options) {
       }
 
       setForm(initialFormState);
+      toast.success("Pedido criado com sucesso.");
       if (onSuccess) {
         await onSuccess(data as Pedido);
       }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Nao foi possivel cadastrar pedido.";
+      toast.error(message);
       onError(message);
     } finally {
       setSalvando(false);

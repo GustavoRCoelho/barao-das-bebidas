@@ -3,6 +3,17 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LogOut, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 
@@ -179,18 +190,38 @@ export function SidebarNav({
           <ThemeToggle compacto className="w-full justify-center px-0" />
         )}
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onLogout}
-          disabled={saindo}
-          className={`w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive ${
-            compacto ? "justify-center" : "justify-start"
-          }`}
-        >
-          <LogOut className="size-4" />
-          {compacto ? null : saindo ? "Saindo..." : "Sair do sistema"}
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={saindo}
+              className={`w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive ${
+                compacto ? "justify-center" : "justify-start"
+              }`}
+            >
+              <LogOut className="size-4" />
+              {compacto ? null : saindo ? "Saindo..." : "Sair do sistema"}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Deseja sair da conta?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Você será desconectado e precisará entrar novamente para acessar o painel.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={onLogout}
+              >
+                Sim, sair
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </aside>
     </>
