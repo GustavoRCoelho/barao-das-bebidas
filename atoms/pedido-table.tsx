@@ -34,6 +34,15 @@ type PedidoTableProps = {
   onDelete: (id: string) => void;
 };
 
+const STATUS_ORDER: PedidoStatus[] = ["pendente", "separacao", "enviado", "entregue"];
+
+function statusTrackColor(status: PedidoStatus) {
+  if (status === "pendente") return "#facc15";
+  if (status === "separacao") return "#38bdf8";
+  if (status === "enviado") return "#a78bfa";
+  return "#34d399";
+}
+
 export function PedidoTable({
   pedidos,
   statusOptions,
@@ -107,9 +116,42 @@ export function PedidoTable({
                     <p className="text-xs text-muted-foreground">{pedido.descricao || "-"}</p>
                   </TableCell>
                   <TableCell>
-                    <Badge className={`${statusClassName(pedido.status)} border-none px-2 py-0.5 text-[10px] font-bold`}>
+                    <Badge
+                      className={`${statusClassName(pedido.status)} border-none px-2 py-0.5 text-[10px] font-bold`}
+                    >
                       {statusLabel[pedido.status]}
                     </Badge>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      {STATUS_ORDER.map((status, index) => {
+                        const statusIndex = STATUS_ORDER.indexOf(pedido.status);
+                        const ativo = index <= statusIndex;
+                        return (
+                          <div key={status} className="flex flex-1 items-center gap-1.5">
+                            <span
+                              className="h-1.5 w-1.5 rounded-full"
+                              style={{
+                                backgroundColor: ativo
+                                  ? statusTrackColor(pedido.status)
+                                  : "rgb(156 163 175 / 0.3)",
+                              }}
+                              aria-hidden
+                            />
+                            {index < STATUS_ORDER.length - 1 ? (
+                              <span
+                                className="h-0.5 flex-1 rounded-full"
+                                style={{
+                                  backgroundColor: ativo
+                                    ? statusTrackColor(pedido.status)
+                                    : "rgb(156 163 175 / 0.2)",
+                                  opacity: ativo ? 0.7 : 1,
+                                }}
+                                aria-hidden
+                              />
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
