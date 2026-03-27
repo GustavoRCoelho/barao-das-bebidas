@@ -160,6 +160,19 @@ export default function HomePage() {
     }
   }, [usuario, cardapioTab.fetchProdutos]);
 
+  useEffect(() => {
+    if (!usuario?.nome) return;
+    criarPedidoTab.setForm((current) => {
+      if (current.cliente === usuario.nome) {
+        return current;
+      }
+      return {
+        ...current,
+        cliente: usuario.nome,
+      };
+    });
+  }, [usuario?.nome, criarPedidoTab.setForm]);
+
   async function sair() {
     setSaindo(true);
     await fetch("/api/auth/logout", { method: "POST" });

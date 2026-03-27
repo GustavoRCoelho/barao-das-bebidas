@@ -174,15 +174,15 @@ export function PedidoForm({ form, produtos, salvando, onChange, onSubmit }: Ped
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Seus dados para entrega
             </h3>
-            <FormGroup label="Nome de quem vai receber *" id="cliente">
+            <FormGroup label="Nome do cliente *" id="cliente">
               <div className="relative">
                 <User2 className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                 <Input
                   id="cliente"
                   value={form.cliente}
-                  onChange={(event) => onChange("cliente", event.target.value)}
-                  placeholder="Ex.: Ana Souza"
-                  className="app-input h-11 py-2 pr-4 pl-10 text-[14px]"
+                  readOnly
+                  title="Preenchido automaticamente com seu nome de usuario."
+                  className="app-input h-11 cursor-not-allowed border-border/70 bg-muted/40 py-2 pr-4 pl-10 text-[14px] text-muted-foreground"
                   required
                 />
               </div>
