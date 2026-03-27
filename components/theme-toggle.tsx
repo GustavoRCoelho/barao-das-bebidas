@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 
 type Props = {
   className?: string;
+  compacto?: boolean;
 };
 
-export function ThemeToggle({ className }: Props) {
+export function ThemeToggle({ className, compacto = false }: Props) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -19,8 +20,8 @@ export function ThemeToggle({ className }: Props) {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="sm" className={className} disabled>
-        Tema
+      <Button variant="outline" size={compacto ? "icon-sm" : "sm"} className={className} disabled>
+        {compacto ? "T" : "Tema"}
       </Button>
     );
   }
@@ -31,12 +32,14 @@ export function ThemeToggle({ className }: Props) {
     <Button
       type="button"
       variant="outline"
-      size="sm"
+      size={compacto ? "icon-sm" : "sm"}
       className={className}
       onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={isDark ? "Alternar para tema claro" : "Alternar para tema escuro"}
+      title={isDark ? "Tema claro" : "Tema escuro"}
     >
       {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-      {isDark ? "Tema claro" : "Tema escuro"}
+      {compacto ? null : isDark ? "Tema claro" : "Tema escuro"}
     </Button>
   );
 }

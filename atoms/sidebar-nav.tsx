@@ -158,7 +158,11 @@ export function SidebarNav({
           </div>
         ) : null}
 
-        {!compacto ? <ThemeToggle className="w-full justify-start gap-2" /> : <ThemeToggle className="w-full justify-center px-0" />}
+        {!compacto ? (
+          <ThemeToggle className="w-full justify-start gap-2" />
+        ) : (
+          <ThemeToggle compacto className="w-full justify-center px-0" />
+        )}
 
         <Button
           variant="ghost"
