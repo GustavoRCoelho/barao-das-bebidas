@@ -119,10 +119,10 @@ export default function AuthPage() {
           </div>
         </section>
 
-        <section className="relative flex items-center justify-center bg-card/80 p-6 sm:p-10 md:p-14">
+        <section className="relative flex items-center justify-center bg-card/80 p-4 sm:p-8 md:p-14">
           <div className="w-full max-w-md space-y-6">
             <div className="flex justify-center">
-              <div className="h-28 w-28 overflow-hidden rounded-lg border border-border bg-card p-1">
+              <div className="h-20 w-20 overflow-hidden rounded-lg border border-border bg-card p-1 sm:h-24 sm:w-24 md:h-28 md:w-28">
                 <Image
                   src="/logo.png"
                   alt="Logo Barão das Bebidas"

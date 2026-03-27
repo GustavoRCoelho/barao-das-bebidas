@@ -22,14 +22,14 @@ export function DashboardHeader({
   showStats,
 }: DashboardHeaderProps) {
   return (
-    <header className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+    <header className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
       <div>
         <div className="text-primary flex items-center gap-2 text-xs font-medium">
           <Home className="size-3" />
           <span className="tracking-wider uppercase">Painel Operacional</span>
         </div>
         <h1
-          className="app-heading-ornate mt-1 text-3xl font-bold tracking-tight text-foreground"
+          className="app-heading-ornate mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
           data-ornament-left="f"
           data-ornament-right="g"
         >
@@ -48,7 +48,7 @@ export function DashboardHeader({
       </div>
 
       {showStats ? (
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
           <div className="app-soft-panel p-3 px-4">
             <p className="text-[10px] font-bold text-muted-foreground uppercase">Total Mês</p>
             <p className="text-lg font-semibold text-foreground">{totalFaturado}</p>

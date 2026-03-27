@@ -42,6 +42,8 @@ type SidebarNavProps = {
   onLogout: () => void;
   compacto?: boolean;
   onToggleCompact?: () => void;
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 };
 
 export function SidebarNav({
@@ -54,13 +56,26 @@ export function SidebarNav({
   onLogout,
   compacto = false,
   onToggleCompact,
+  mobileOpen = false,
+  onCloseMobile,
 }: SidebarNavProps) {
   return (
-    <aside
-      className={`app-panel fixed left-0 top-0 z-40 flex h-screen flex-col gap-6 overflow-y-auto rounded-tr-xl rounded-br-xl rounded-tl-none rounded-bl-none transition-[width,padding] duration-200 ${
-        compacto ? "w-[78px] p-3" : "w-[260px] p-4"
-      }`}
-    >
+    <>
+      {mobileOpen ? (
+        <button
+          type="button"
+          aria-label="Fechar menu"
+          onClick={onCloseMobile}
+          className="fixed inset-0 z-30 bg-black/45 md:hidden"
+        />
+      ) : null}
+      <aside
+        className={`app-panel fixed left-0 top-0 z-40 flex h-screen flex-col gap-6 overflow-y-auto rounded-tr-xl rounded-br-xl rounded-tl-none rounded-bl-none transition-[width,padding,transform] duration-200 ${
+          compacto ? "w-[78px] p-3" : "w-[260px] p-4"
+        } ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`}
+      >
       <div
         className={`flex items-center gap-3 ${compacto ? "px-0 justify-center" : "px-2"}`}
       >
@@ -117,7 +132,10 @@ export function SidebarNav({
           return (
             <button
               key={item.id}
-              onClick={() => onSelectAba(item.id)}
+              onClick={() => {
+                onSelectAba(item.id);
+                onCloseMobile?.();
+              }}
               className={`group flex w-full items-center gap-3 rounded-xl transition-all duration-200 ${
                 compacto ? "justify-center px-0 py-2.5" : "px-4 py-2.5"
               } text-sm font-medium ${
@@ -175,5 +193,6 @@ export function SidebarNav({
         </Button>
       </div>
     </aside>
+    </>
   );
 }

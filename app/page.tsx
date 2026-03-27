@@ -17,6 +17,8 @@ import {
   ClipboardList,
   DollarSign,
   PackageCheck,
+  PanelLeftClose,
+  PanelLeftOpen,
   PlusCircle,
   Settings2,
   ShoppingCart,
@@ -79,6 +81,7 @@ export default function HomePage() {
   const [usuario, setUsuario] = useState<UsuarioInfo | null>(null);
   const [saindo, setSaindo] = useState(false);
   const [sidebarCompacto, setSidebarCompacto] = useState(false);
+  const [sidebarMobileAberta, setSidebarMobileAberta] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [abaAtiva, setAbaAtiva] = useState<Aba>("criar");
 
@@ -184,13 +187,13 @@ export default function HomePage() {
       </div>
 
       <div
-        className={`relative w-full transition-all ${
-          sidebarCompacto ? "pl-[78px]" : "pl-[260px]"
+        className={`relative w-full pl-0 transition-all ${
+          sidebarCompacto ? "md:pl-[78px]" : "md:pl-[260px]"
         }`}
       >
         <SidebarNav
           menu={menu}
-            abaAtiva={abaAtiva as "cardapio" | "criar" | "gerenciar-cardapio" | "gerenciar" | "gerenciar-usuarios"}
+          abaAtiva={abaAtiva as "cardapio" | "criar" | "gerenciar-cardapio" | "gerenciar" | "gerenciar-usuarios"}
           onSelectAba={(id) => setAbaAtiva(id as Aba)}
           usuarioNome={usuario?.nome}
           usuarioRole={usuario?.role}
@@ -198,10 +201,26 @@ export default function HomePage() {
           onLogout={sair}
           compacto={sidebarCompacto}
           onToggleCompact={() => setSidebarCompacto((atual) => !atual)}
+          mobileOpen={sidebarMobileAberta}
+          onCloseMobile={() => setSidebarMobileAberta(false)}
         />
 
-        <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
+        <div className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 md:px-8 md:py-8">
           <div className="space-y-8">
+            <div className="flex md:hidden">
+              <button
+                type="button"
+                onClick={() => setSidebarMobileAberta((atual) => !atual)}
+                className="app-soft-panel inline-flex items-center gap-2 px-3 py-2 text-sm"
+              >
+                {sidebarMobileAberta ? (
+                  <PanelLeftClose className="size-4" />
+                ) : (
+                  <PanelLeftOpen className="size-4" />
+                )}
+                Menu
+              </button>
+            </div>
             <DashboardHeader
               abaAtiva={abaAtiva}
               totalFaturado={moeda(gerenciarPedidosTab.totalFaturado)}
