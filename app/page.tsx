@@ -26,6 +26,7 @@ import {
   UserCog,
 } from "lucide-react";
 import { useCardapioTab } from "@/hooks/use-cardapio-tab";
+import { useFavoritosProdutos } from "@/hooks/use-favoritos-produtos";
 import { useCriarPedidoTab } from "@/hooks/use-criar-pedido-tab";
 import { useGerenciarCardapioTab } from "@/hooks/use-gerenciar-cardapio-tab";
 import { useGerenciarPedidosTab } from "@/hooks/use-gerenciar-pedidos-tab";
@@ -94,6 +95,11 @@ export default function HomePage() {
   }, []);
 
   const cardapioTab = useCardapioTab({
+    onError: handleError,
+  });
+
+  const favoritosProdutos = useFavoritosProdutos({
+    enabled: Boolean(usuario),
     onError: handleError,
   });
 
@@ -167,8 +173,9 @@ export default function HomePage() {
   useEffect(() => {
     if (usuario) {
       cardapioTab.fetchProdutos();
+      void favoritosProdutos.fetchFavoritos();
     }
-  }, [usuario, cardapioTab.fetchProdutos]);
+  }, [usuario, cardapioTab.fetchProdutos, favoritosProdutos.fetchFavoritos]);
 
   useEffect(() => {
     if (!usuario?.nome) return;
@@ -306,7 +313,14 @@ export default function HomePage() {
 
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {abaAtiva === "cardapio" ? (
-                <CardapioTable produtos={cardapioTab.produtos} categorias={cardapioTab.categorias} />
+                <CardapioTable
+                  produtos={cardapioTab.produtos}
+                  categorias={cardapioTab.categorias}
+                  favoritosHabilitado={Boolean(usuario)}
+                  favoritosIds={favoritosProdutos.favoritosIds}
+                  favoritosCarregando={favoritosProdutos.favoritosLoading}
+                  onToggleFavoritoProduto={favoritosProdutos.toggleFavorito}
+                />
               ) : abaAtiva === "criar" ? (
                 <PedidoForm
                   form={criarPedidoTab.form}
@@ -315,6 +329,10 @@ export default function HomePage() {
                   salvando={criarPedidoTab.salvando}
                   onSubmit={criarPedidoTab.submitPedido}
                   onChange={handlePedidoFormChange}
+                  favoritosHabilitado={Boolean(usuario)}
+                  favoritosIds={favoritosProdutos.favoritosIds}
+                  favoritosCarregando={favoritosProdutos.favoritosLoading}
+                  onToggleFavoritoProduto={favoritosProdutos.toggleFavorito}
                 />
               ) : abaAtiva === "acompanhar" ? (
                 <MeusPedidos

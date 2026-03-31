@@ -10,16 +10,30 @@ import {
   produtoPassaFiltroCategoria,
   type CategoriaFiltroValor,
 } from "@/atoms/categoria-filtro-chips";
+import { BotaoFavoritoProduto } from "@/atoms/botao-favorito-produto";
+import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
 
 type CardapioTableProps = {
   produtos: Produto[];
   categorias: Categoria[];
+  favoritosHabilitado?: boolean;
+  favoritosIds?: Set<string>;
+  favoritosCarregando?: boolean;
+  onToggleFavoritoProduto?: (produtoId: string) => void;
 };
 
-export function CardapioTable({ produtos, categorias }: CardapioTableProps) {
+export function CardapioTable({
+  produtos,
+  categorias,
+  favoritosHabilitado = false,
+  favoritosIds,
+  favoritosCarregando = false,
+  onToggleFavoritoProduto,
+}: CardapioTableProps) {
   const [busca, setBusca] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState<CategoriaFiltroValor>(null);
+  const [somenteFavoritos, setSomenteFavoritos] = useState(false);
 
   const mostrarSemCategoria = useMemo(
     () => produtos.some((p) => p.categoria_id === null),
@@ -31,9 +45,11 @@ export function CardapioTable({ produtos, categorias }: CardapioTableProps) {
     return produtos.filter((produto) => {
       const passaCat = produtoPassaFiltroCategoria(produto.categoria_id, filtroCategoria);
       const passaNome = !termo || produto.nome.toLowerCase().includes(termo);
-      return passaCat && passaNome;
+      const passaFav =
+        !somenteFavoritos || (favoritosIds ? favoritosIds.has(produto.id) : false);
+      return passaCat && passaNome && passaFav;
     });
-  }, [busca, filtroCategoria, produtos]);
+  }, [busca, filtroCategoria, produtos, somenteFavoritos, favoritosIds]);
 
   return (
     <Card className="app-panel">
@@ -55,6 +71,41 @@ export function CardapioTable({ produtos, categorias }: CardapioTableProps) {
             mostrarSemCategoria={mostrarSemCategoria}
           />
         </div>
+        {favoritosHabilitado ? (
+          <div>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Favoritos
+            </p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar favoritos">
+              <button
+                type="button"
+                onClick={() => setSomenteFavoritos(false)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  !somenteFavoritos
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border bg-background text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                Todos os produtos
+              </button>
+              <button
+                type="button"
+                onClick={() => setSomenteFavoritos(true)}
+                disabled={favoritosCarregando}
+                aria-pressed={somenteFavoritos}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  somenteFavoritos
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border bg-background text-muted-foreground hover:bg-muted/80"
+                )}
+              >
+                Só favoritos
+              </button>
+            </div>
+          </div>
+        ) : null}
         <div className="flex items-center gap-2">
           <Input
             placeholder="Pesquisar por nome do produto..."
@@ -73,7 +124,16 @@ export function CardapioTable({ produtos, categorias }: CardapioTableProps) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {produtosFiltrados.map((produto) => (
                 <article key={produto.id} className="app-soft-panel overflow-hidden">
-                  <div className="bg-muted/40 flex h-40 items-center justify-center border-b">
+                  <div className="bg-muted/40 relative flex h-40 items-center justify-center border-b">
+                    {favoritosHabilitado && onToggleFavoritoProduto ? (
+                      <div className="absolute top-2 right-2 z-10">
+                        <BotaoFavoritoProduto
+                          ativo={Boolean(favoritosIds?.has(produto.id))}
+                          disabled={favoritosCarregando}
+                          onToggle={() => onToggleFavoritoProduto(produto.id)}
+                        />
+                      </div>
+                    ) : null}
                     {produto.foto_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img

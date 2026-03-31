@@ -48,9 +48,10 @@ O projeto permite:
   - dados de entrega,
   - seleção de itens do cardápio em modal,
   - **filtros por categoria** (chips: Todas, Sem categoria, por nome da categoria) e busca por nome,
+  - **favoritos** (coração em cada produto) e filtro **“Só favoritos”** quando logado,
   - resumo antes da confirmação final,
   - validação de campos obrigatórios (incluindo telefone formatado).
-- **Cardápio** (visualização): mesmos filtros por categoria e busca; badge com categoria no card do produto.
+- **Cardápio** (visualização): mesmos filtros por categoria e busca; badge com categoria no card; **favoritar** produtos e filtrar apenas favoritados (usuário autenticado).
 - Acompanhamento de pedidos com:
   - cards visuais,
   - trilha de status por etapa,
@@ -98,9 +99,10 @@ O projeto permite:
 ## Categorias e produtos (referência técnica)
 
 - Tabela `categorias`; `produtos.categoria_id` opcional com FK e `ON DELETE SET NULL`.
+- **Favoritos por usuário:** tabela `produto_favoritos` (`usuario_id`, `produto_id`, unicidade do par, `ON DELETE CASCADE` nas FKs). API em `app/api/favoritos/route.ts`; cliente em `hooks/use-favoritos-produtos.ts`; botão reutilizável `atoms/botao-favorito-produto.tsx` no cardápio (`atoms/cardapio-table.tsx`) e no modal do pedido (`atoms/pedido-form.tsx`).
 - UI admin: `atoms/gerenciar-produtos-estoque.tsx`; filtros reutilizáveis no cardápio e no pedido: `atoms/categoria-filtro-chips.tsx`.
 - Tipos: `lib/categorias.ts`, `lib/produtos.ts` (produto inclui `categoria_id` e objeto `categoria` resumido quando o join vem da API).
-- `useCardapioTab` carrega **produtos** e **categorias** em paralelo.
+- `useCardapioTab` carrega **produtos** e **categorias** em paralelo; favoritos são carregados à parte quando há sessão.
 
 ## Arquitetura do projeto
 
@@ -165,7 +167,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 
 - `supabase/schema.sql`
 
-> O script cria tabelas (`usuarios`, `auth_sessions`, `pedidos`, `produtos`, **`categorias`**), relacionamento **produto → categoria**, constraints e políticas RLS usadas no fluxo atual.
+> O script cria tabelas (`usuarios`, `auth_sessions`, `pedidos`, `produtos`, **`categorias`**, **`produto_favoritos`**), relacionamento **produto → categoria**, vínculo **usuário ↔ produto** para favoritos, constraints e políticas RLS usadas no fluxo atual.
 
 ## Executando o projeto
 
@@ -227,6 +229,12 @@ Ambiente de produção:
 - `PATCH /api/categorias/:id` - atualiza nome (admin)
 - `DELETE /api/categorias/:id` - exclui categoria (admin); produtos perdem o vínculo
 
+### Favoritos (produtos)
+
+- `GET /api/favoritos` - lista IDs de produtos favoritados pelo usuário da sessão; resposta `{ produto_ids: string[] }` (**autenticado**)
+- `POST /api/favoritos` - adiciona favorito; corpo `{ produto_id: string }`; idempotente se já existir (**autenticado**)
+- `DELETE /api/favoritos?produto_id=<uuid>` - remove o favorito (**autenticado**)
+
 ### Usuários
 
 - `GET /api/usuarios` - lista usuários (**admin**) com **paginação**:
@@ -239,6 +247,7 @@ Ambiente de produção:
 - `cliente`:
   - criar pedidos
   - acompanhar os próprios pedidos
+  - favoritar produtos (cardápio e pedido); lista salva por usuário em `produto_favoritos`
 - `admin`:
   - tudo de cliente
   - gerenciar pedidos, produtos, usuários e **relatórios** (aba e API restritas a admin)
@@ -263,6 +272,7 @@ Regra de bootstrap:
 app/
   api/
     auth/
+    favoritos/
     pedidos/
     relatorios/
     produtos/
@@ -290,3 +300,4 @@ README.md
 - Painel admin **Produtos e estoque**: blocos recolhíveis com estado persistido no **localStorage** (padrão expandido); **paginação** na tabela de produtos após filtros locais.
 - **Paginação** em **Gerenciar pedidos**, **Acompanhar pedidos** e **Gerenciar usuários** (API); refetch silencioso após ações para não bloquear a tabela com loading completo quando faz sentido.
 - Tabelas administrativas com **estilo unificado** (cabeçalho `muted/50`, borda arredondada na área rolável, tipografia consistente com a grade de produtos).
+- **Produtos favoritos** por usuário (`produto_favoritos` no banco): favoritar na aba **Cardápio** e no **modal do pedido**, com filtro **“Só favoritos”**; persistência via `/api/favoritos` e estado em `useFavoritosProdutos`.

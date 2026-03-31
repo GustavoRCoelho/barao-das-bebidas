@@ -7,7 +7,7 @@ Este arquivo foi criado como apoio rapido para apresentacao ao professor.
 "Meu projeto se chama **Barao das Bebidas**.
 Ele e um sistema web para gestao de pedidos, com dois perfis de acesso: **cliente** e **admin**.
 Foi desenvolvido com **Next.js 16 (App Router)**, **TypeScript** e **Supabase**.
-O objetivo principal e digitalizar o fluxo da loja: cadastro/autenticacao, criacao de pedidos, **catalogo por categorias** no banco, controle de estoque, administracao do sistema e **visao consolidada em relatorios** para o admin."
+O objetivo principal e digitalizar o fluxo da loja: cadastro/autenticacao, criacao de pedidos, **catalogo por categorias** no banco, **favoritos por usuario** no cardapio e no pedido, controle de estoque, administracao do sistema e **visao consolidada em relatorios** para o admin."
 
 ## 2) Problema e Objetivo
 
@@ -21,9 +21,9 @@ O objetivo principal e digitalizar o fluxo da loja: cadastro/autenticacao, criac
 
 ### Cliente
 - Cadastro e login.
-- **Cardapio**: filtrar por categoria (chips) e buscar por nome; badge da categoria no card.
+- **Cardapio**: filtrar por categoria (chips) e buscar por nome; badge da categoria no card; **favoritar** produtos (coracao) e filtro **So favoritos** (lista no banco: `produto_favoritos`).
 - Criacao de pedido com validacoes.
-- **Modal do cardapio no pedido**: mesmos filtros por categoria + busca; ver categoria em cada item.
+- **Modal do cardapio no pedido**: mesmos filtros por categoria + busca; ver categoria em cada item; mesmo controle de **favoritos** e filtro de favoritados.
 - Selecao de itens e resumo antes da confirmacao.
 - Acompanhamento de status do pedido com **busca paginada** na API (`/api/pedidos/me`) e resumo coerente com o filtro.
 
@@ -65,6 +65,7 @@ Tabelas principais:
 - `auth_sessions` (user_id, token_hash, expires_at)
 - **`categorias`** (id, nome unico)
 - `produtos` (nome, preco, quantidade_estoque, foto_url, **`categoria_id`** opcional → FK em `categorias`, `ON DELETE SET NULL`)
+- **`produto_favoritos`** (`usuario_id` + `produto_id`, unico o par; FKs com `ON DELETE CASCADE`)
 - `pedidos` (usuario_id, produto_id, item, quantidade, valor_total, status)
 
 Regras importantes:
@@ -116,6 +117,7 @@ Pontos fortes:
 - Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
 - Pedidos: `GET /api/pedidos` e `GET /api/pedidos/me` com `page`, `pageSize` e busca (`q` em admin; `me` tambem usa `observacao`); resposta paginada com `resumo` do conjunto filtrado; demais: `POST`, `PATCH`, `DELETE`
 - Produtos: `GET /api/produtos` (com join de categoria), `POST/PATCH` com `categoria_id` opcional, `DELETE`
+- **Favoritos**: `GET /api/favoritos` (`{ produto_ids }`), `POST /api/favoritos` (`{ produto_id }`), `DELETE /api/favoritos?produto_id=` (usuario logado)
 - **Categorias**: `GET /api/categorias`, `POST /api/categorias`, `PATCH /api/categorias/:id`, `DELETE /api/categorias/:id` (admin nas mutacoes)
 - Usuarios: `GET /api/usuarios` com `page`, `pageSize`, `nome`, `email` (opcional); `PATCH /api/usuarios/:id`
 - Relatorios: `GET /api/relatorios?inicio=<ISO>&fim=<ISO>` (admin; agrega pedidos no intervalo, inclui `porCategoria`)
@@ -139,7 +141,7 @@ Frase curta para falar na hora:
 
 1. Cadastro/login.
 2. Mostrar diferenca de menu entre cliente e admin (cliente **nao** ve Relatorios).
-3. Como cliente: abrir **Cardapio** — mostrar chips de categoria e busca; depois **Fazer pedidos** — modal com o mesmo tipo de filtro.
+3. Como cliente: abrir **Cardapio** — chips de categoria, busca e **favoritos** (marcar um produto, ativar **So favoritos**); depois **Fazer pedidos** — modal com o mesmo tipo de filtro e favoritos.
 4. Como admin: **Produtos e estoque** — criar ou citar categoria; associar produto a categoria; opcional: mostrar **recolher/expandir** secoes.
 5. Como admin: **Gerenciar pedidos** — alterar status (rapido); opcional: mostrar busca e troca de pagina.
 6. (Opcional) **Gerenciar usuarios** — filtros e paginacao.
@@ -147,7 +149,7 @@ Frase curta para falar na hora:
 8. Encerrar com logout e rota protegida (ou `proxy.ts`).
 
 Dicas de fala:
-- Passo 3: "As categorias vêm do banco; o cliente filtra sem precisar ver lista enorme."
+- Passo 3: "As categorias vêm do banco; o cliente filtra sem precisar ver lista enorme. Favoritos ficam gravados por usuario na tabela `produto_favoritos`."
 - Passo 7 (relatorios): "Aqui o gestor fecha o ciclo: numeros do periodo, status, corte por categoria e ranking de itens, sem planilha."
 
 ## 11) Limitacoes Atuais e Proximos Passos
@@ -179,6 +181,9 @@ Os proximos passos focam em seguranca avancada, testes e escalabilidade."
 
 **Quem cadastra categorias?**
 - So o **admin**, via API `POST/PATCH/DELETE /api/categorias`. O cliente so le a lista para filtrar cardapio e pedido.
+
+**Como funcionam os favoritos?**
+- Usuario autenticado marca produtos no cardapio ou no modal do pedido; a lista de IDs vem de `GET /api/favoritos` e as mudancas usam `POST` e `DELETE` com sessao valida no servidor.
 
 **O que acontece se eu apagar uma categoria?**
 - O registro some; produtos que usavam essa categoria ficam com `categoria_id` nulo (`ON DELETE SET NULL`).

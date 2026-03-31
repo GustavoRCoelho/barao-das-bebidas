@@ -76,11 +76,23 @@ create table if not exists public.categorias (
 alter table public.produtos
 add column if not exists categoria_id uuid references public.categorias(id) on delete set null;
 
+create table if not exists public.produto_favoritos (
+  id uuid primary key default gen_random_uuid(),
+  usuario_id uuid not null references public.usuarios(id) on delete cascade,
+  produto_id uuid not null references public.produtos(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (usuario_id, produto_id)
+);
+
+create index if not exists produto_favoritos_usuario_id_idx on public.produto_favoritos (usuario_id);
+create index if not exists produto_favoritos_produto_id_idx on public.produto_favoritos (produto_id);
+
 alter table public.pedidos enable row level security;
 alter table public.usuarios enable row level security;
 alter table public.auth_sessions enable row level security;
 alter table public.produtos enable row level security;
 alter table public.categorias enable row level security;
+alter table public.produto_favoritos enable row level security;
 
 drop policy if exists "Anon pode ler pedidos" on public.pedidos;
 drop policy if exists "Anon pode criar pedidos" on public.pedidos;
@@ -226,3 +238,27 @@ grant select, insert, update, delete on public.produtos to anon;
 grant select, insert, update, delete on public.categorias to anon;
 
 grant select, insert, update on public.usuarios to anon;
+
+drop policy if exists "Anon pode ler favoritos" on public.produto_favoritos;
+drop policy if exists "Anon pode criar favoritos" on public.produto_favoritos;
+drop policy if exists "Anon pode remover favoritos" on public.produto_favoritos;
+
+create policy "Anon pode ler favoritos"
+on public.produto_favoritos
+for select
+to anon
+using (true);
+
+create policy "Anon pode criar favoritos"
+on public.produto_favoritos
+for insert
+to anon
+with check (true);
+
+create policy "Anon pode remover favoritos"
+on public.produto_favoritos
+for delete
+to anon
+using (true);
+
+grant select, insert, delete on public.produto_favoritos to anon;

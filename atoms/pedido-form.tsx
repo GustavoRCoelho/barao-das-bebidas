@@ -31,8 +31,10 @@ import {
   produtoPassaFiltroCategoria,
   type CategoriaFiltroValor,
 } from "@/atoms/categoria-filtro-chips";
+import { BotaoFavoritoProduto } from "@/atoms/botao-favorito-produto";
+import { cn } from "@/lib/utils";
 import type { PedidoItemSelecionado } from "@/lib/pedidos";
-import { MapPin, Phone, Plus, PlusCircle, Search, Sparkles, User2, X } from "lucide-react";
+import { MapPin, Phone, Plus, PlusCircle, Search, User2, X } from "lucide-react";
 import { FormGroup } from "@/atoms/form-group";
 import { useEffect, useMemo, useState } from "react";
 
@@ -57,6 +59,10 @@ type PedidoFormProps = {
     event: React.FormEvent<HTMLFormElement>,
     itensSelecionados: PedidoItemSelecionado[]
   ) => void;
+  favoritosHabilitado?: boolean;
+  favoritosIds?: Set<string>;
+  favoritosCarregando?: boolean;
+  onToggleFavoritoProduto?: (produtoId: string) => void;
 };
 
 function formatarTelefoneBR(value: string) {
@@ -67,9 +73,21 @@ function formatarTelefoneBR(value: string) {
   return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
 }
 
-export function PedidoForm({ form, produtos, categorias, salvando, onChange, onSubmit }: PedidoFormProps) {
+export function PedidoForm({
+  form,
+  produtos,
+  categorias,
+  salvando,
+  onChange,
+  onSubmit,
+  favoritosHabilitado = false,
+  favoritosIds,
+  favoritosCarregando = false,
+  onToggleFavoritoProduto,
+}: PedidoFormProps) {
   const [buscaProduto, setBuscaProduto] = useState("");
   const [filtroCategoriaModal, setFiltroCategoriaModal] = useState<CategoriaFiltroValor>(null);
+  const [somenteFavoritosModal, setSomenteFavoritosModal] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
   const [confirmarAberto, setConfirmarAberto] = useState(false);
   const [itensSelecionados, setItensSelecionados] = useState<
@@ -86,9 +104,12 @@ export function PedidoForm({ form, produtos, categorias, salvando, onChange, onS
     return produtos.filter((produto) => {
       const passaCat = produtoPassaFiltroCategoria(produto.categoria_id, filtroCategoriaModal);
       const passaNome = !termo || produto.nome.toLowerCase().includes(termo);
-      return passaCat && passaNome;
+      const passaFav =
+        !somenteFavoritosModal ||
+        (favoritosIds ? favoritosIds.has(produto.id) : false);
+      return passaCat && passaNome && passaFav;
     });
-  }, [buscaProduto, filtroCategoriaModal, produtos]);
+  }, [buscaProduto, filtroCategoriaModal, produtos, somenteFavoritosModal, favoritosIds]);
 
   const itensSelecionadosArray = useMemo(
     () => Object.values(itensSelecionados),
@@ -272,6 +293,45 @@ export function PedidoForm({ form, produtos, categorias, salvando, onChange, onS
                           mostrarSemCategoria={mostrarSemCategoriaModal}
                         />
                       </div>
+                      {favoritosHabilitado ? (
+                        <div>
+                          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Favoritos
+                          </p>
+                          <div
+                            className="flex flex-wrap gap-2"
+                            role="group"
+                            aria-label="Filtrar favoritos no cardápio"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setSomenteFavoritosModal(false)}
+                              className={cn(
+                                "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                                !somenteFavoritosModal
+                                  ? "border-primary bg-primary/15 text-primary"
+                                  : "border-border bg-background text-muted-foreground hover:bg-muted/80"
+                              )}
+                            >
+                              Todos os produtos
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSomenteFavoritosModal(true)}
+                              disabled={favoritosCarregando}
+                              aria-pressed={somenteFavoritosModal}
+                              className={cn(
+                                "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                                somenteFavoritosModal
+                                  ? "border-primary bg-primary/15 text-primary"
+                                  : "border-border bg-background text-muted-foreground hover:bg-muted/80"
+                              )}
+                            >
+                              Só favoritos
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
                       <div className="relative">
                         <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                         <Input
@@ -327,6 +387,13 @@ export function PedidoForm({ form, produtos, categorias, salvando, onChange, onS
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
+                                {favoritosHabilitado && onToggleFavoritoProduto ? (
+                                  <BotaoFavoritoProduto
+                                    ativo={Boolean(favoritosIds?.has(produto.id))}
+                                    disabled={favoritosCarregando}
+                                    onToggle={() => onToggleFavoritoProduto(produto.id)}
+                                  />
+                                ) : null}
                                 <Badge variant={selecionado ? "default" : "secondary"}>
                                   {selecionado ? "Selecionado" : "Disponivel"}
                                 </Badge>
