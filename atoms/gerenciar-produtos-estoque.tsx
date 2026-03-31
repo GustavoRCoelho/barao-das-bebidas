@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -27,7 +27,7 @@ import {
 import type { Categoria } from "@/lib/categorias";
 import type { Produto } from "@/lib/produtos";
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 const SEM_CATEGORIA = "__none__";
@@ -83,6 +83,8 @@ export function GerenciarProdutosEstoque({
   const [novaCategoriaId, setNovaCategoriaId] = useState<string>(SEM_CATEGORIA);
   const [filtroNome, setFiltroNome] = useState("");
   const [filtroQuantidade, setFiltroQuantidade] = useState("");
+  const [produtoPage, setProdutoPage] = useState(1);
+  const [produtoPageSize, setProdutoPageSize] = useState(10);
 
   const [catEditingId, setCatEditingId] = useState<string | null>(null);
   const [catNome, setCatNome] = useState("");
@@ -110,6 +112,27 @@ export function GerenciarProdutosEstoque({
       return passouNome && passouQuantidade;
     });
   }, [produtos, filtroNome, filtroQuantidade]);
+
+  const totalProdutosLista = produtosFiltrados.length;
+  const totalProdutoPages = Math.max(1, Math.ceil(totalProdutosLista / produtoPageSize));
+
+  const produtosPagina = useMemo(() => {
+    const start = (produtoPage - 1) * produtoPageSize;
+    return produtosFiltrados.slice(start, start + produtoPageSize);
+  }, [produtosFiltrados, produtoPage, produtoPageSize]);
+
+  useEffect(() => {
+    setProdutoPage(1);
+  }, [filtroNome, filtroQuantidade]);
+
+  useEffect(() => {
+    if (produtoPage > totalProdutoPages) {
+      setProdutoPage(totalProdutoPages);
+    }
+  }, [produtoPage, totalProdutoPages]);
+
+  const produtoInicio = totalProdutosLista === 0 ? 0 : (produtoPage - 1) * produtoPageSize + 1;
+  const produtoFim = Math.min(produtoPage * produtoPageSize, totalProdutosLista);
 
   function selecionarValorCategoria(value: string) {
     return value === SEM_CATEGORIA ? null : value;
@@ -397,12 +420,14 @@ export function GerenciarProdutosEstoque({
             </Button>
           </form>
 
-          <div className="max-h-[220px] overflow-auto rounded-md border border-border">
+          <div className="max-h-[280px] overflow-auto rounded-xl border border-border/80 shadow-sm">
             <Table>
-              <TableHeader className="bg-muted/40">
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead className="w-[160px] text-right">Ações</TableHead>
+              <TableHeader className="bg-muted/50 dark:bg-muted/25">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="uppercase tracking-wider text-[11px]">Nome</TableHead>
+                  <TableHead className="w-[200px] text-right uppercase tracking-wider text-[11px]">
+                    Ações
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -416,19 +441,21 @@ export function GerenciarProdutosEstoque({
                   categorias.map((cat) => {
                     const editando = catEditingId === cat.id;
                     return (
-                      <TableRow key={cat.id}>
-                        <TableCell>
+                      <TableRow key={cat.id} className="align-top">
+                        <TableCell className="py-4">
                           {editando ? (
                             <Input
-                              className="app-input"
+                              className="app-input h-10"
                               value={catNome}
                               onChange={(e) => setCatNome(e.target.value)}
                             />
                           ) : (
-                            <span className="font-medium">{cat.nome}</span>
+                            <span className="text-[15px] font-semibold leading-snug text-foreground">
+                              {cat.nome}
+                            </span>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right align-middle">
                           {editando ? (
                             <div className="flex justify-end gap-2">
                               <Button size="sm" onClick={() => salvarCategoria(cat.id)} disabled={salvando}>
@@ -568,57 +595,81 @@ export function GerenciarProdutosEstoque({
             />
           </div>
 
-          <div className="max-h-[65vh] w-full max-w-full overflow-auto rounded-md border border-border">
-            <Table className="w-full min-w-[980px] table-fixed">
-              <TableHeader className="bg-muted/40">
-                <TableRow>
-                  <TableHead className="w-[130px]">Nome</TableHead>
-                  <TableHead className="w-[140px]">Descricao</TableHead>
-                  <TableHead className="w-[120px]">Categoria</TableHead>
-                  <TableHead className="w-[80px]">Preco</TableHead>
-                  <TableHead className="w-[72px]">Estoque</TableHead>
-                  <TableHead className="w-[160px]">Foto (link)</TableHead>
-                  <TableHead className="w-[120px] text-right">Ações</TableHead>
+          <div className="max-h-[70vh] w-full max-w-full overflow-auto rounded-xl border border-border/80 shadow-sm">
+            <Table className="w-full min-w-[1040px] table-fixed">
+              <TableHeader className="bg-muted/50 dark:bg-muted/25">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[150px] uppercase tracking-wider text-[11px]">Nome</TableHead>
+                  <TableHead className="w-[180px] uppercase tracking-wider text-[11px]">
+                    Descrição
+                  </TableHead>
+                  <TableHead className="w-[130px] uppercase tracking-wider text-[11px]">
+                    Categoria
+                  </TableHead>
+                  <TableHead className="w-[92px] uppercase tracking-wider text-[11px]">Preço</TableHead>
+                  <TableHead className="w-[88px] uppercase tracking-wider text-[11px]">Estoque</TableHead>
+                  <TableHead className="w-[200px] uppercase tracking-wider text-[11px]">
+                    Foto (link)
+                  </TableHead>
+                  <TableHead className="w-[148px] text-right uppercase tracking-wider text-[11px]">
+                    Ações
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {produtosFiltrados.map((produto) => {
+                {totalProdutosLista === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      className="py-10 text-center text-sm text-muted-foreground"
+                    >
+                      Nenhum produto para exibir com esse filtro.
+                    </TableCell>
+                  </TableRow>
+                ) : null}
+                {produtosPagina.map((produto) => {
                   const editando = editingId === produto.id;
                   return (
-                    <TableRow key={produto.id}>
-                      <TableCell>
-                        {editando ? (
-                          <Input className="app-input" value={nome} onChange={(e) => setNome(e.target.value)} />
-                        ) : (
-                          <span className="block truncate">{produto.nome}</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
+                    <TableRow key={produto.id} className="align-top">
+                      <TableCell className="py-4">
                         {editando ? (
                           <Input
-                            className="app-input"
+                            className="app-input h-10"
+                            value={nome}
+                            onChange={(e) => setNome(e.target.value)}
+                          />
+                        ) : (
+                          <span className="block text-sm font-semibold leading-snug text-foreground">
+                            {produto.nome}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-4 whitespace-normal">
+                        {editando ? (
+                          <Input
+                            className="app-input h-10"
                             value={descricao}
                             onChange={(e) => setDescricao(e.target.value)}
                           />
                         ) : (
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {produto.descricao || "-"}
+                          <span className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                            {produto.descricao?.trim() ? produto.descricao : "—"}
                           </span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">
                         {editando ? (
                           <SelectCategoria value={categoriaId} onChange={setCategoriaId} />
                         ) : (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-sm leading-snug text-muted-foreground">
                             {produto.categoria?.nome ?? "—"}
                           </span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4 text-sm font-medium tabular-nums text-foreground">
                         {editando ? (
                           <Input
-                            className="app-input"
+                            className="app-input h-10"
                             type="number"
                             min={0}
                             step="0.01"
@@ -629,10 +680,10 @@ export function GerenciarProdutosEstoque({
                           `R$ ${Number(produto.preco).toFixed(2)}`
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4 text-sm font-medium tabular-nums">
                         {editando ? (
                           <Input
-                            className="app-input"
+                            className="app-input h-10"
                             type="number"
                             min={0}
                             value={estoque}
@@ -642,16 +693,20 @@ export function GerenciarProdutosEstoque({
                           produto.quantidade_estoque
                         )}
                       </TableCell>
-                      <TableCell className="max-w-[200px]">
+                      <TableCell className="max-w-[220px] py-4 whitespace-normal">
                         {editando ? (
-                          <Input className="app-input" value={foto} onChange={(e) => setFoto(e.target.value)} />
+                          <Input
+                            className="app-input h-10"
+                            value={foto}
+                            onChange={(e) => setFoto(e.target.value)}
+                          />
                         ) : (
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {produto.foto_url || "-"}
+                          <span className="block break-all text-xs leading-relaxed text-muted-foreground">
+                            {produto.foto_url || "—"}
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="py-4 text-right align-middle">
                         {editando ? (
                           <div className="flex justify-end gap-2 whitespace-nowrap">
                             <Button size="sm" onClick={() => salvarEdicao(produto.id)} disabled={salvando}>
@@ -682,6 +737,65 @@ export function GerenciarProdutosEstoque({
                 })}
               </TableBody>
             </Table>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-muted-foreground text-xs tabular-nums">
+              {totalProdutosLista === 0 ? (
+                "Nenhum produto para exibir com esse filtro."
+              ) : (
+                <>
+                  Mostrando <span className="font-medium text-foreground">{produtoInicio}</span>–
+                  <span className="font-medium text-foreground">{produtoFim}</span> de{" "}
+                  <span className="font-medium text-foreground">{totalProdutosLista}</span> produtos
+                </>
+              )}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                value={String(produtoPageSize)}
+                onValueChange={(v) => {
+                  setProdutoPageSize(Number(v));
+                  setProdutoPage(1);
+                }}
+              >
+                <SelectTrigger className="app-input h-8 w-[118px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10 / página</SelectItem>
+                  <SelectItem value="20">20 / página</SelectItem>
+                  <SelectItem value="50">50 / página</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={produtoPage <= 1}
+                  onClick={() => setProdutoPage((p) => Math.max(1, p - 1))}
+                  aria-label="Página anterior"
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <span className="text-muted-foreground min-w-28 px-1 text-center text-xs tabular-nums">
+                  Página {produtoPage} / {totalProdutoPages}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={produtoPage >= totalProdutoPages}
+                  onClick={() => setProdutoPage((p) => Math.min(totalProdutoPages, p + 1))}
+                  aria-label="Próxima página"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
           </div>
             </CardContent>
           </CollapsibleContent>

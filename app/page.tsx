@@ -270,8 +270,8 @@ export default function HomePage() {
             </div>
             <DashboardHeader
               abaAtiva={abaAtiva}
-              totalFaturado={moeda(gerenciarPedidosTab.totalFaturado)}
-              totalPedidos={gerenciarPedidosTab.pedidos.length}
+              totalFaturado={moeda(gerenciarPedidosTab.resumo.totalFaturado)}
+              totalPedidos={gerenciarPedidosTab.resumo.totalPedidos}
               showStats={Boolean(usuario?.role === "admin" && abaAtiva === "gerenciar")}
             />
 
@@ -279,7 +279,7 @@ export default function HomePage() {
               <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                   title="Total"
-                  value={gerenciarPedidosTab.pedidos.length}
+                  value={gerenciarPedidosTab.resumo.totalPedidos}
                   icon={ShoppingCart}
                   color="text-blue-400"
                 />
@@ -297,7 +297,7 @@ export default function HomePage() {
                 />
                 <StatCard
                   title="Receita"
-                  value={moeda(gerenciarPedidosTab.totalFaturado)}
+                  value={moeda(gerenciarPedidosTab.resumo.totalFaturado)}
                   icon={DollarSign}
                   color="text-violet-400"
                 />
@@ -323,6 +323,15 @@ export default function HomePage() {
                   statusLabel={STATUS_LABEL}
                   statusClassName={statusClassName}
                   formatCurrency={moeda}
+                  resumo={meusPedidosTab.resumo}
+                  searchInput={meusPedidosTab.searchInput}
+                  onSearchChange={meusPedidosTab.setSearchInput}
+                  page={meusPedidosTab.page}
+                  pageSize={meusPedidosTab.pageSize}
+                  total={meusPedidosTab.total}
+                  totalPages={meusPedidosTab.totalPages}
+                  onPageChange={meusPedidosTab.goToPage}
+                  onPageSizeChange={meusPedidosTab.setPageSize}
                 />
               ) : abaAtiva === "gerenciar-cardapio" ? (
                 <GerenciarProdutosEstoque
@@ -338,6 +347,16 @@ export default function HomePage() {
                   loading={gerenciarUsuariosTab.loading}
                   updatingId={gerenciarUsuariosTab.updatingId}
                   onRoleChange={gerenciarUsuariosTab.atualizarRole}
+                  filtroNome={gerenciarUsuariosTab.filtroNome}
+                  onFiltroNomeChange={gerenciarUsuariosTab.setFiltroNome}
+                  filtroEmail={gerenciarUsuariosTab.filtroEmail}
+                  onFiltroEmailChange={gerenciarUsuariosTab.setFiltroEmail}
+                  page={gerenciarUsuariosTab.page}
+                  pageSize={gerenciarUsuariosTab.pageSize}
+                  total={gerenciarUsuariosTab.total}
+                  totalPages={gerenciarUsuariosTab.totalPages}
+                  onPageChange={gerenciarUsuariosTab.goToPage}
+                  onPageSizeChange={gerenciarUsuariosTab.setPageSize}
                 />
               ) : abaAtiva === "relatorios" && usuario?.role === "admin" ? (
                 <RelatoriosDashboard
@@ -362,6 +381,14 @@ export default function HomePage() {
                   loading={gerenciarPedidosTab.loading}
                   onStatusChange={gerenciarPedidosTab.atualizarStatus}
                   onDelete={gerenciarPedidosTab.excluirPedido}
+                  searchInput={gerenciarPedidosTab.searchInput}
+                  onSearchChange={gerenciarPedidosTab.setSearchInput}
+                  page={gerenciarPedidosTab.page}
+                  pageSize={gerenciarPedidosTab.pageSize}
+                  total={gerenciarPedidosTab.total}
+                  totalPages={gerenciarPedidosTab.totalPages}
+                  onPageChange={gerenciarPedidosTab.goToPage}
+                  onPageSizeChange={gerenciarPedidosTab.setPageSize}
                 />
               )}
             </div>

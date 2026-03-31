@@ -211,3 +211,75 @@
     content: attr(data-ornament-right);
   }
 }
+
+@keyframes list-shimmer-move {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pedidos-icon-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pedidos-aurora-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(8px, -6px) scale(1.05);
+    opacity: 0.5;
+  }
+}
+
+@keyframes pedidos-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pedidos-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.92 0.02 95 / 0.5) 0%,
+    oklch(0.97 0.015 95 / 0.9) 45%,
+    oklch(0.92 0.02 95 / 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: list-shimmer-move 1.35s ease-in-out infinite;
+}
+
+.dark .pedidos-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.22 0.02 95 / 0.5) 0%,
+    oklch(0.28 0.02 95 / 0.85) 45%,
+    oklch(0.22 0.02 95 / 0.5) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.pedidos-skeleton-row {
+  opacity: 0;
+  animation: pedidos-row-in 0.45s ease-out forwards;
+}
+
+.pedidos-load-aurora {
+  animation: pedidos-aurora-drift 5s ease-in-out infinite;
+}

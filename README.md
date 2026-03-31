@@ -54,26 +54,33 @@ O projeto permite:
 - Acompanhamento de pedidos com:
   - cards visuais,
   - trilha de status por etapa,
-  - busca e resumo.
+  - busca no servidor com debounce,
+  - **paginação** (tamanho da página configurável),
+  - resumo no período conforme o filtro aplicado.
 
 ### Admin
 
 - Gerenciamento de pedidos:
   - alteração de status,
   - exclusão,
-  - indicadores de rastreio por status.
+  - indicadores de rastreio por status,
+  - **listagem paginada** com busca no servidor (`cliente`, item, descrição),
+  - cartões de totais (pedidos, em aberto, entregues, receita) refletem o conjunto filtrado, não só a página atual.
 - **Produtos e estoque** (menu da sidebar; tela “Produtos, estoque e categorias”):
   - CRUD de **categorias** (nome único no banco; exclusão desvincula produtos com `ON DELETE SET NULL`);
   - CRUD de produtos com **categoria opcional**, preço, estoque e foto;
-  - seções **Categorias** e **Produtos e estoque** podem ser **recolhidas**; preferência salva em `localStorage` (abertas por padrão).
+  - seções **Categorias** e **Produtos e estoque** podem ser **recolhidas**; preferência salva em `localStorage` (abertas por padrão);
+  - tabela de produtos com **paginação no cliente** (filtro por nome e quantidade aplicado antes de paginar).
 - Gerenciamento de usuários:
-  - alteração de role (`admin` / `cliente`).
+  - alteração de role (`admin` / `cliente`),
+  - **listagem paginada** com filtros opcionais por nome e e-mail no servidor.
 - Relatórios e indicadores:
   - aba exclusiva para **admin** (API e interface);
   - filtros de período: hoje, semana, mês e intervalo personalizado;
   - cartões com resumo (pedidos, receita, ticket médio, unidades);
-  - gráficos com **Recharts** (receita ao longo do tempo, pedidos por status, volume diário, top itens);
-  - cores de status alinhadas ao tema (`--chart-status-*` em `globals.css`).
+  - gráficos com **Recharts** (receita ao longo do tempo, pedidos por status, volume diário, top itens, **receita por categoria** do produto vinculado ao pedido);
+  - cores de status alinhadas ao tema (`--chart-status-*` em `globals.css`);
+  - estado de carregamento com componente dedicado (`atoms/pedidos-list-loading.tsx`) nas listagens de pedidos e usuários.
 
 ### UX/UI
 
@@ -85,7 +92,7 @@ O projeto permite:
 ## Relatórios (admin)
 
 - Rota de agregação: `GET /api/relatorios?inicio=<ISO>&fim=<ISO>` — apenas admin autenticado.
-- Dados calculados a partir de `pedidos` no intervalo: resumo, série diária, distribuição por status, ranking de itens.
+- Dados calculados a partir de `pedidos` no intervalo: resumo, série diária, distribuição por status, ranking de itens, **`porCategoria`** (join `pedidos` → `produtos` → `categorias`; buckets para pedidos sem produto ou sem categoria quando aplicável).
 - UI: `atoms/relatorios-dashboard.tsx`, estado em `hooks/use-relatorios-tab.ts`, tipos em `lib/relatorios.ts`.
 
 ## Categorias e produtos (referência técnica)
@@ -192,15 +199,19 @@ Ambiente de produção:
 
 ### Pedidos
 
-- `GET /api/pedidos` - lista pedidos (admin)
+- `GET /api/pedidos` - lista pedidos (**admin**), com **paginação e busca**:
+  - query: `page` (default 1), `pageSize` (5–50, default 10), `q` (opcional, filtra cliente, item e descrição com `ILIKE`);
+  - corpo JSON: `{ pedidos, total, page, pageSize, resumo }`, onde `resumo` agrega **todo** o conjunto filtrado (total de pedidos, em aberto, entregues, receita).
 - `POST /api/pedidos` - cria pedido (cliente/admin autenticado)
 - `PATCH /api/pedidos/:id` - atualiza pedido (admin)
 - `DELETE /api/pedidos/:id` - remove pedido (admin)
-- `GET /api/pedidos/me` - pedidos do usuário logado
+- `GET /api/pedidos/me` - pedidos do usuário logado (**paginação**):
+  - query: `page`, `pageSize`, `q` (opcional; também busca em `observacao`);
+  - corpo: `{ pedidos, total, page, pageSize, resumo }` no mesmo padrão.
 
 ### Relatórios
 
-- `GET /api/relatorios` - agregados do período (`inicio`, `fim` em ISO 8601; **admin**)
+- `GET /api/relatorios` - agregados do período (`inicio`, `fim` em ISO 8601; **admin**). Resposta inclui `porCategoria[]` (receita, pedidos e unidades por categoria ou rótulos especiais quando não há vínculo).
 
 ### Produtos
 
@@ -218,7 +229,9 @@ Ambiente de produção:
 
 ### Usuários
 
-- `GET /api/usuarios` - lista usuários (admin)
+- `GET /api/usuarios` - lista usuários (**admin**) com **paginação**:
+  - query: `page`, `pageSize`, `nome`, `email` (opcionais; filtros `ILIKE` independentes);
+  - corpo: `{ usuarios, total, page, pageSize }` (campos `id`, `nome`, `email`, `role`).
 - `PATCH /api/usuarios/:id` - altera role (admin)
 
 ## Regras de acesso (RBAC)
@@ -248,19 +261,19 @@ Regra de bootstrap:
 
 ```text
 app/
-    api/
-      auth/
-      pedidos/
-      relatorios/
-      produtos/
-      categorias/
-      usuarios/
+  api/
+    auth/
+    pedidos/
+    relatorios/
+    produtos/
+    categorias/
+    usuarios/
   auth/
   layout.tsx
   page.tsx
 atoms/
 hooks/
-lib/
+lib/          # inclui pedidos-listagem.ts, relatorios.ts, usuarios-admin.ts, etc.
 public/
 supabase/
 README.md
@@ -272,6 +285,8 @@ README.md
 - Confirmação em modal para logout.
 - Confirmação em modal com resumo antes de enviar pedido.
 - Toasts globais (`sonner`) para sucesso/erro em create/update/delete.
-- Painel de **relatórios** com card de filtros, gráficos com legenda e paleta por status (não monocromática).
+- Painel de **relatórios** com card de filtros, gráficos com legenda e paleta por status (não monocromática); **receita por categoria**.
 - **Categorias** dinâmicas (sem lista fixa no código): filtros em cardápio e no modal do pedido; admin com CRUD de categorias e atribuição por produto.
-- Painel admin **Produtos e estoque**: blocos recolhíveis com estado persistido no **localStorage** (padrão expandido).
+- Painel admin **Produtos e estoque**: blocos recolhíveis com estado persistido no **localStorage** (padrão expandido); **paginação** na tabela de produtos após filtros locais.
+- **Paginação** em **Gerenciar pedidos**, **Acompanhar pedidos** e **Gerenciar usuários** (API); refetch silencioso após ações para não bloquear a tabela com loading completo quando faz sentido.
+- Tabelas administrativas com **estilo unificado** (cabeçalho `muted/50`, borda arredondada na área rolável, tipografia consistente com a grade de produtos).

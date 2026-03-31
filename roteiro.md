@@ -25,19 +25,20 @@ O objetivo principal e digitalizar o fluxo da loja: cadastro/autenticacao, criac
 - Criacao de pedido com validacoes.
 - **Modal do cardapio no pedido**: mesmos filtros por categoria + busca; ver categoria em cada item.
 - Selecao de itens e resumo antes da confirmacao.
-- Acompanhamento de status do pedido.
+- Acompanhamento de status do pedido com **busca paginada** na API (`/api/pedidos/me`) e resumo coerente com o filtro.
 
 ### Admin
-- Gerenciamento de pedidos (listar, atualizar status, excluir).
+- Gerenciamento de pedidos (listar com **paginação e busca** em `GET /api/pedidos`, atualizar status, excluir).
 - **Produtos e estoque** (menu curto na sidebar; titulo da tela: produtos, estoque e categorias):
   - **CRUD de categorias** (nomes cadastrados no banco — sem lista fixa no codigo).
   - **CRUD de produtos** com escolha de categoria (ou sem categoria).
-  - Secoes **Categorias** e **Produtos e estoque** podem ser **recolhidas**; preferencia em `localStorage` (padrao: abertas).
-- Gerenciamento de usuarios (alterar `role`).
+  - Secoes **Categorias** e **Produtos e estoque** podem ser **recolhidas**; preferencia em `localStorage` (padrao: abertas);
+  - tabela de produtos com **paginacao no navegador** apos aplicar filtros (nome e quantidade).
+- Gerenciamento de usuarios (alterar `role`; listagem **paginada** com filtros opcionais por nome e email em `GET /api/usuarios`).
 - **Relatorios** (so admin):
   - ultima aba do menu;
   - filtros: hoje, semana, mes, periodo personalizado (card branco com datas);
-  - indicadores e graficos (receita no tempo, pizza por status, barras de volume, top itens);
+  - indicadores e graficos (receita no tempo, pizza por status, barras de volume, top itens, **receita por categoria** via produto do pedido);
   - cores de status consistentes (pendente, separacao, enviado, entregue).
 
 ## 4) Arquitetura da Solucao
@@ -113,14 +114,15 @@ Pontos fortes:
 ## 8) Endpoints Principais
 
 - Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
-- Pedidos: `GET /api/pedidos`, `POST /api/pedidos`, `PATCH /api/pedidos/:id`, `DELETE /api/pedidos/:id`, `GET /api/pedidos/me`
+- Pedidos: `GET /api/pedidos` e `GET /api/pedidos/me` com `page`, `pageSize` e busca (`q` em admin; `me` tambem usa `observacao`); resposta paginada com `resumo` do conjunto filtrado; demais: `POST`, `PATCH`, `DELETE`
 - Produtos: `GET /api/produtos` (com join de categoria), `POST/PATCH` com `categoria_id` opcional, `DELETE`
 - **Categorias**: `GET /api/categorias`, `POST /api/categorias`, `PATCH /api/categorias/:id`, `DELETE /api/categorias/:id` (admin nas mutacoes)
-- Usuarios: `GET /api/usuarios`, `PATCH /api/usuarios/:id`
-- Relatorios: `GET /api/relatorios?inicio=<ISO>&fim=<ISO>` (admin; agrega pedidos no intervalo)
+- Usuarios: `GET /api/usuarios` com `page`, `pageSize`, `nome`, `email` (opcional); `PATCH /api/usuarios/:id`
+- Relatorios: `GET /api/relatorios?inicio=<ISO>&fim=<ISO>` (admin; agrega pedidos no intervalo, inclui `porCategoria`)
 
 Frase curta para falar na hora:
-- "O backend recebe duas datas em ISO, busca os pedidos no Supabase e devolve resumo, serie por dia, contagem por status e ranking de itens — tudo no servidor para o grafico so consumir."
+- "O backend recebe duas datas em ISO, busca os pedidos no Supabase e devolve resumo, serie por dia, contagem por status, ranking de itens e agregacao por categoria — tudo no servidor para os graficos consumirem."
+- Para listas grandes: "Pedidos, meus pedidos e usuarios usam paginacao na API; a tabela de produtos no admin pagina no cliente depois dos filtros."
 
 ## 9) UX e Qualidade da Experiencia
 
@@ -131,6 +133,7 @@ Frase curta para falar na hora:
 - Graficos com `recharts`, legendas e paleta por status (CSS vars `--chart-status-*`).
 - Filtros de **categoria** no cardapio e no pedido (chips + busca).
 - Painel admin com blocos **recolhíveis** (localStorage).
+- Tabelas de gestao com visual **alinhado** (mesmo padrao de cabecalho e area rolavel que produtos/estoque); loading dedicado nas listas de pedidos e usuarios.
 
 ## 10) Roteiro de Demonstracao (3-5 min) — ajuste o tempo
 
@@ -138,13 +141,14 @@ Frase curta para falar na hora:
 2. Mostrar diferenca de menu entre cliente e admin (cliente **nao** ve Relatorios).
 3. Como cliente: abrir **Cardapio** — mostrar chips de categoria e busca; depois **Fazer pedidos** — modal com o mesmo tipo de filtro.
 4. Como admin: **Produtos e estoque** — criar ou citar categoria; associar produto a categoria; opcional: mostrar **recolher/expandir** secoes.
-5. Como admin: **Gerenciar pedidos** — alterar status (rapido).
-6. **Relatorios**: **ultima** aba; Hoje / Semana / Mes; pizza e receita; se der tempo, periodo personalizado.
-7. Encerrar com logout e rota protegida (ou `proxy.ts`).
+5. Como admin: **Gerenciar pedidos** — alterar status (rapido); opcional: mostrar busca e troca de pagina.
+6. (Opcional) **Gerenciar usuarios** — filtros e paginacao.
+7. **Relatorios**: **ultima** aba; Hoje / Semana / Mes; pizza, receita no tempo e **por categoria**; se der tempo, periodo personalizado.
+8. Encerrar com logout e rota protegida (ou `proxy.ts`).
 
 Dicas de fala:
 - Passo 3: "As categorias vêm do banco; o cliente filtra sem precisar ver lista enorme."
-- Passo 6 (relatorios): "Aqui o gestor fecha o ciclo: numeros do periodo, status e ranking de itens, sem planilha."
+- Passo 7 (relatorios): "Aqui o gestor fecha o ciclo: numeros do periodo, status, corte por categoria e ranking de itens, sem planilha."
 
 ## 11) Limitacoes Atuais e Proximos Passos
 
