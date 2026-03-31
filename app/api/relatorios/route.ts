@@ -29,6 +29,42 @@ type LookupProdutoCategoria = Map<
   { categoriaId: string | null; categoriaNome: string }
 >;
 
+/** Supabase pode devolver o embed como objeto ou como array; unifica para um objeto. */
+function extrairCategoriaEmbutida(
+  c: unknown
+): { id: string; nome: string } | null {
+  if (c == null) return null;
+  if (Array.isArray(c)) {
+    const first = c[0];
+    if (first && typeof first === "object" && first !== null && "id" in first && "nome" in first) {
+      const o = first as { id: unknown; nome: unknown };
+      return { id: String(o.id), nome: String(o.nome) };
+    }
+    return null;
+  }
+  if (typeof c === "object" && c !== null && "id" in c && "nome" in c) {
+    const o = c as { id: unknown; nome: unknown };
+    return { id: String(o.id), nome: String(o.nome) };
+  }
+  return null;
+}
+
+function normalizarLinhasProdutoCategoria(rows: unknown[] | null): ProdutoCatRow[] {
+  const out: ProdutoCatRow[] = [];
+  for (const row of rows ?? []) {
+    if (!row || typeof row !== "object") continue;
+    const r = row as { id?: unknown; categoria_id?: unknown; categoria?: unknown };
+    if (typeof r.id !== "string") continue;
+    const cid = r.categoria_id;
+    out.push({
+      id: r.id,
+      categoria_id: cid === null || typeof cid === "string" ? cid : null,
+      categoria: extrairCategoriaEmbutida(r.categoria),
+    });
+  }
+  return out;
+}
+
 function montarLookupProdutos(rows: ProdutoCatRow[] | null): LookupProdutoCategoria {
   const map = new Map<string, { categoriaId: string | null; categoriaNome: string }>();
   for (const r of rows ?? []) {
@@ -219,7 +255,7 @@ export async function GET(request: Request) {
       if (e2) {
         return NextResponse.json({ erro: e2.message }, { status: 500 });
       }
-      lookup = montarLookupProdutos(prows as ProdutoCatRow[] | null);
+      lookup = montarLookupProdutos(normalizarLinhasProdutoCategoria(prows as unknown[] | null));
     }
 
     const relatorio = montarRelatorio(pedidos, lookup, inicio, fim);
