@@ -33,7 +33,7 @@ export function DashboardHeader({
           {abaAtiva === "cardapio"
             ? "Cardápio de Produtos"
             : abaAtiva === "gerenciar-cardapio"
-              ? "Administração do Cardápio"
+              ? "Produtos, estoque e categorias"
             : abaAtiva === "criar"
               ? "Novo Pedido"
               : abaAtiva === "acompanhar"

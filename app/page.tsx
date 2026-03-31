@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DashboardHeader } from "@/atoms/dashboard-header";
 import { CardapioTable } from "@/atoms/cardapio-table";
-import { GerenciarCardapio } from "@/atoms/gerenciar-cardapio";
+import { GerenciarProdutosEstoque } from "@/atoms/gerenciar-produtos-estoque";
 import { PedidoForm } from "@/atoms/pedido-form";
 import type { PedidoFormState } from "@/atoms/pedido-form";
 import { PedidoTable } from "@/atoms/pedido-table";
@@ -209,7 +209,7 @@ export default function HomePage() {
     { id: "acompanhar" as const, label: "Acompanhar pedidos", icon: ClipboardList },
     ...(usuario?.role === "admin"
       ? [
-        { id: "gerenciar-cardapio" as const, label: "Gerenciar cardápio", icon: Settings2 },
+        { id: "gerenciar-cardapio" as const, label: "Produtos e estoque", icon: Settings2 },
         { id: "gerenciar" as const, label: "Gerenciar pedidos", icon: ClipboardList },
         { id: "gerenciar-usuarios" as const, label: "Gerenciar usuários", icon: UserCog },
         { id: "relatorios" as const, label: "Relatórios", icon: BarChart3 },
@@ -306,11 +306,12 @@ export default function HomePage() {
 
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             {abaAtiva === "cardapio" ? (
-                <CardapioTable produtos={cardapioTab.produtos} />
+                <CardapioTable produtos={cardapioTab.produtos} categorias={cardapioTab.categorias} />
               ) : abaAtiva === "criar" ? (
                 <PedidoForm
                   form={criarPedidoTab.form}
                   produtos={cardapioTab.produtos}
+                  categorias={cardapioTab.categorias}
                   salvando={criarPedidoTab.salvando}
                   onSubmit={criarPedidoTab.submitPedido}
                   onChange={handlePedidoFormChange}
@@ -324,10 +325,12 @@ export default function HomePage() {
                   formatCurrency={moeda}
                 />
               ) : abaAtiva === "gerenciar-cardapio" ? (
-                <GerenciarCardapio
+                <GerenciarProdutosEstoque
                   produtos={cardapioTab.produtos}
+                  categorias={cardapioTab.categorias}
                   onProdutoAtualizado={gerenciarCardapioTab.handleProdutoAtualizado}
                   onProdutoExcluido={gerenciarCardapioTab.handleProdutoExcluido}
+                  onCardapioRefresh={() => void cardapioTab.fetchProdutos()}
                 />
               ) : abaAtiva === "gerenciar-usuarios" ? (
                 <GerenciarUsuarios

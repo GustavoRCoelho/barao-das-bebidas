@@ -24,7 +24,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import type { Categoria } from "@/lib/categorias";
 import type { Produto } from "@/lib/produtos";
+import {
+  CategoriaFiltroChips,
+  produtoPassaFiltroCategoria,
+  type CategoriaFiltroValor,
+} from "@/atoms/categoria-filtro-chips";
 import type { PedidoItemSelecionado } from "@/lib/pedidos";
 import { MapPin, Phone, Plus, PlusCircle, Search, Sparkles, User2, X } from "lucide-react";
 import { FormGroup } from "@/atoms/form-group";
@@ -44,6 +50,7 @@ export type PedidoFormState = {
 type PedidoFormProps = {
   form: PedidoFormState;
   produtos: Produto[];
+  categorias: Categoria[];
   salvando: boolean;
   onChange: (field: keyof PedidoFormState, value: string) => void;
   onSubmit: (
@@ -60,19 +67,28 @@ function formatarTelefoneBR(value: string) {
   return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
 }
 
-export function PedidoForm({ form, produtos, salvando, onChange, onSubmit }: PedidoFormProps) {
+export function PedidoForm({ form, produtos, categorias, salvando, onChange, onSubmit }: PedidoFormProps) {
   const [buscaProduto, setBuscaProduto] = useState("");
+  const [filtroCategoriaModal, setFiltroCategoriaModal] = useState<CategoriaFiltroValor>(null);
   const [modalAberto, setModalAberto] = useState(false);
   const [confirmarAberto, setConfirmarAberto] = useState(false);
   const [itensSelecionados, setItensSelecionados] = useState<
     Record<string, { produto: Produto; quantidade: number }>
   >({});
 
+  const mostrarSemCategoriaModal = useMemo(
+    () => produtos.some((p) => p.categoria_id === null),
+    [produtos]
+  );
+
   const produtosFiltrados = useMemo(() => {
     const termo = buscaProduto.trim().toLowerCase();
-    if (!termo) return produtos;
-    return produtos.filter((produto) => produto.nome.toLowerCase().includes(termo));
-  }, [buscaProduto, produtos]);
+    return produtos.filter((produto) => {
+      const passaCat = produtoPassaFiltroCategoria(produto.categoria_id, filtroCategoriaModal);
+      const passaNome = !termo || produto.nome.toLowerCase().includes(termo);
+      return passaCat && passaNome;
+    });
+  }, [buscaProduto, filtroCategoriaModal, produtos]);
 
   const itensSelecionadosArray = useMemo(
     () => Object.values(itensSelecionados),
@@ -244,14 +260,27 @@ export function PedidoForm({ form, produtos, salvando, onChange, onSubmit }: Ped
                       </DialogDescription>
                     </DialogHeader>
 
-                    <div className="relative">
-                      <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-                      <Input
-                        className="pl-9"
-                        placeholder="Pesquisar por nome..."
-                        value={buscaProduto}
-                        onChange={(event) => setBuscaProduto(event.target.value)}
-                      />
+                    <div className="space-y-3">
+                      <div>
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          Categoria
+                        </p>
+                        <CategoriaFiltroChips
+                          categorias={categorias}
+                          valor={filtroCategoriaModal}
+                          onChange={setFiltroCategoriaModal}
+                          mostrarSemCategoria={mostrarSemCategoriaModal}
+                        />
+                      </div>
+                      <div className="relative">
+                        <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                        <Input
+                          className="pl-9"
+                          placeholder="Pesquisar por nome..."
+                          value={buscaProduto}
+                          onChange={(event) => setBuscaProduto(event.target.value)}
+                        />
+                      </div>
                     </div>
 
                     <div className="grid max-h-[56vh] grid-cols-1 gap-3 overflow-auto pr-1 md:grid-cols-2">
@@ -282,6 +311,11 @@ export function PedidoForm({ form, produtos, salvando, onChange, onSubmit }: Ped
                                 </div>
                                 <div>
                                   <p className="font-medium">{produto.nome}</p>
+                                  {produto.categoria ? (
+                                    <p className="text-[10px] font-medium uppercase tracking-wide text-primary/90">
+                                      {produto.categoria.nome}
+                                    </p>
+                                  ) : null}
                                   {produto.descricao ? (
                                     <p className="line-clamp-2 text-xs text-muted-foreground">
                                       {produto.descricao}

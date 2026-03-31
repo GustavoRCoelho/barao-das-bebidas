@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import type { Categoria } from "@/lib/categorias";
 import type { Produto } from "@/lib/produtos";
 
 type Options = {
@@ -9,18 +10,29 @@ type Options = {
 
 export function useCardapioTab({ onError }: Options) {
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
 
   const fetchProdutos = useCallback(async () => {
     try {
-      const response = await fetch("/api/produtos", { cache: "no-store" });
-      const data = (await response.json()) as Produto[] | { erro: string };
-      if (!response.ok) {
-        throw new Error("erro" in data ? data.erro : "Falha ao listar produtos.");
+      const [resP, resC] = await Promise.all([
+        fetch("/api/produtos", { cache: "no-store" }),
+        fetch("/api/categorias", { cache: "no-store" }),
+      ]);
+      const dataP = (await resP.json()) as Produto[] | { erro: string };
+      const dataC = (await resC.json()) as Categoria[] | { erro: string };
+
+      if (!resP.ok) {
+        throw new Error("erro" in dataP ? dataP.erro : "Falha ao listar produtos.");
       }
-      setProdutos(data as Produto[]);
+      if (!resC.ok) {
+        throw new Error("erro" in dataC ? dataC.erro : "Falha ao listar categorias.");
+      }
+
+      setProdutos(dataP as Produto[]);
+      setCategorias(dataC as Categoria[]);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Nao foi possivel carregar produtos.";
+        error instanceof Error ? error.message : "Nao foi possivel carregar cardapio.";
       onError(message);
     }
   }, [onError]);
@@ -47,6 +59,7 @@ export function useCardapioTab({ onError }: Options) {
 
   return {
     produtos,
+    categorias,
     fetchProdutos,
     adicionarProduto,
     atualizarProduto,

@@ -26,10 +26,19 @@ export type RelatorioTopItem = {
   receita: number;
 };
 
+export type RelatorioPorCategoria = {
+  id: string;
+  nome: string;
+  receita: number;
+  pedidos: number;
+  unidades: number;
+};
+
 export type RelatorioResposta = {
   periodo: { inicio: string; fim: string };
   resumo: RelatorioResumo;
   porStatus: RelatorioPorStatus[];
   serieTemporal: RelatorioSeriePonto[];
   topItens: RelatorioTopItem[];
+  porCategoria: RelatorioPorCategoria[];
 };

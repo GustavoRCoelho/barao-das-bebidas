@@ -37,7 +37,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { StatCard } from "@/atoms/stat-card";
-import type { RelatorioResposta } from "@/lib/relatorios";
+import type { RelatorioPorCategoria, RelatorioResposta } from "@/lib/relatorios";
 import type { PeriodoRelatorio } from "@/hooks/use-relatorios-tab";
 
 const CORES_STATUS = {
@@ -58,6 +58,13 @@ const chartPedidosDiaConfig = {
   pedidos: {
     label: "Pedidos",
     color: "var(--chart-volume)",
+  },
+} satisfies Record<string, { label: string; color: string }>;
+
+const chartCategoriaConfig = {
+  receita: {
+    label: "Receita (R$)",
+    color: "var(--chart-receita)",
   },
 } satisfies Record<string, { label: string; color: string }>;
 
@@ -121,6 +128,20 @@ export function RelatoriosDashboard({
       ...p,
       labelCurto: formatarDataLabel(p.data),
     })) ?? [];
+
+  const listaCategoria = data?.porCategoria ?? [];
+  const porCategoriaChart = listaCategoria
+    .slice()
+    .reverse()
+    .map((c) => ({
+      ...c,
+      nomeCurto: c.nome.length > 30 ? `${c.nome.slice(0, 28)}…` : c.nome,
+    }));
+
+  const alturaGraficoCategoria = Math.min(
+    440,
+    Math.max(180, listaCategoria.length * 36 + 48)
+  );
 
   return (
     <div className="space-y-8">
@@ -436,6 +457,80 @@ export function RelatoriosDashboard({
               </CardContent>
             </Card>
           </div>
+
+          <Card className="app-soft-panel">
+            <CardHeader>
+              <CardTitle>Receita por categoria</CardTitle>
+              <CardDescription>
+                Baseada na categoria do produto vinculado a cada pedido no período
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pl-0">
+              {porCategoriaChart.length === 0 ? (
+                <p className="px-6 text-sm text-muted-foreground">
+                  Sem dados por categoria neste período.
+                </p>
+              ) : (
+                <ChartContainer
+                  config={chartCategoriaConfig}
+                  className="w-full"
+                  style={{ height: alturaGraficoCategoria }}
+                >
+                  <BarChart
+                    layout="vertical"
+                    data={porCategoriaChart}
+                    margin={{ left: 4, right: 16, top: 8, bottom: 8 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis
+                      type="number"
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) =>
+                        new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                          notation: "compact",
+                          maximumFractionDigits: 1,
+                        }).format(Number(v))
+                      }
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="nomeCurto"
+                      width={132}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{ fontSize: 11 }}
+                    />
+                    <ChartTooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length) return null;
+                        const p = payload[0].payload as RelatorioPorCategoria;
+                        return (
+                          <div className="rounded-lg border border-border/60 bg-background px-3 py-2 text-sm shadow-md">
+                            <p className="font-medium text-foreground">{p.nome}</p>
+                            <p className="mt-1 tabular-nums text-foreground">{moeda(p.receita)}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {p.pedidos} pedidos · {p.unidades} un.
+                            </p>
+                          </div>
+                        );
+                      }}
+                    />
+                    <Bar dataKey="receita" radius={[0, 6, 6, 0]}>
+                      {porCategoriaChart.map((_, i) => (
+                        <Cell
+                          key={`cat-${i}`}
+                          fill={`var(--chart-${(i % 5) + 1})`}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartContainer>
+              )}
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card className="app-soft-panel">

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { obterUsuarioSessao } from "@/lib/auth";
+import type { ProdutoDbRow } from "@/lib/produtos";
+import { produtoFromDbRow } from "@/lib/produtos";
 import { createSupabaseApiClient } from "@/lib/supabase";
+
+const PRODUTO_SELECT = "*, categoria:categorias(id, nome)";
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -22,13 +26,14 @@ export async function PATCH(request: Request, { params }: Params) {
     preco?: number;
     quantidade_estoque?: number;
     foto_url?: string | null;
+    categoria_id?: string | null;
   };
 
   if (body.preco !== undefined && Number(body.preco) < 0) {
     return NextResponse.json({ erro: "Preco do produto invalido." }, { status: 400 });
   }
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     ...(body.nome !== undefined ? { nome: body.nome.trim() } : {}),
     ...(body.descricao !== undefined ? { descricao: body.descricao?.trim() || null } : {}),
     ...(body.preco !== undefined ? { preco: Number(body.preco) } : {}),
@@ -38,12 +43,19 @@ export async function PATCH(request: Request, { params }: Params) {
     ...(body.foto_url !== undefined ? { foto_url: body.foto_url?.trim() || null } : {}),
   };
 
+  if (body.categoria_id !== undefined) {
+    payload.categoria_id =
+      body.categoria_id === null || body.categoria_id === ""
+        ? null
+        : String(body.categoria_id);
+  }
+
   const supabase = createSupabaseApiClient();
   const { data, error } = await supabase
     .from("produtos")
     .update(payload)
     .eq("id", id)
-    .select("*")
+    .select(PRODUTO_SELECT)
     .maybeSingle();
 
   if (error) {
@@ -57,7 +69,7 @@ export async function PATCH(request: Request, { params }: Params) {
     );
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(produtoFromDbRow(data as ProdutoDbRow));
 }
 
 export async function DELETE(_request: Request, { params }: Params) {

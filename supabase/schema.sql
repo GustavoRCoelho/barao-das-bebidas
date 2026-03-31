@@ -67,10 +67,20 @@ add column if not exists descricao text;
 alter table public.produtos
 add column if not exists preco numeric(10, 2) not null default 0;
 
+create table if not exists public.categorias (
+  id uuid primary key default gen_random_uuid(),
+  nome text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table public.produtos
+add column if not exists categoria_id uuid references public.categorias(id) on delete set null;
+
 alter table public.pedidos enable row level security;
 alter table public.usuarios enable row level security;
 alter table public.auth_sessions enable row level security;
 alter table public.produtos enable row level security;
+alter table public.categorias enable row level security;
 
 drop policy if exists "Anon pode ler pedidos" on public.pedidos;
 drop policy if exists "Anon pode criar pedidos" on public.pedidos;
@@ -181,6 +191,38 @@ for delete
 to anon
 using (true);
 
+drop policy if exists "Anon pode ler categorias" on public.categorias;
+drop policy if exists "Anon pode criar categorias" on public.categorias;
+drop policy if exists "Anon pode editar categorias" on public.categorias;
+drop policy if exists "Anon pode remover categorias" on public.categorias;
+
+create policy "Anon pode ler categorias"
+on public.categorias
+for select
+to anon
+using (true);
+
+create policy "Anon pode criar categorias"
+on public.categorias
+for insert
+to anon
+with check (true);
+
+create policy "Anon pode editar categorias"
+on public.categorias
+for update
+to anon
+using (true)
+with check (true);
+
+create policy "Anon pode remover categorias"
+on public.categorias
+for delete
+to anon
+using (true);
+
 grant select, insert, update, delete on public.produtos to anon;
+
+grant select, insert, update, delete on public.categorias to anon;
 
 grant select, insert, update on public.usuarios to anon;

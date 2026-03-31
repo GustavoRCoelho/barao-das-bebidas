@@ -4,6 +4,7 @@ import { obterUsuarioSessao } from "@/lib/auth";
 import { createSupabaseApiClient } from "@/lib/supabase";
 import type { Pedido, PedidoStatus } from "@/lib/pedidos";
 import type {
+  RelatorioPorCategoria,
   RelatorioPorStatus,
   RelatorioResposta,
   RelatorioSeriePonto,
@@ -17,8 +18,51 @@ const STATUS_LABEL: Record<PedidoStatus, string> = {
   entregue: "Entregue",
 };
 
+type ProdutoCatRow = {
+  id: string;
+  categoria_id: string | null;
+  categoria: { id: string; nome: string } | null;
+};
+
+type LookupProdutoCategoria = Map<
+  string,
+  { categoriaId: string | null; categoriaNome: string }
+>;
+
+function montarLookupProdutos(rows: ProdutoCatRow[] | null): LookupProdutoCategoria {
+  const map = new Map<string, { categoriaId: string | null; categoriaNome: string }>();
+  for (const r of rows ?? []) {
+    if (r.categoria) {
+      map.set(r.id, { categoriaId: r.categoria.id, categoriaNome: r.categoria.nome });
+    } else if (r.categoria_id) {
+      map.set(r.id, { categoriaId: r.categoria_id, categoriaNome: "Categoria indisponível" });
+    } else {
+      map.set(r.id, { categoriaId: null, categoriaNome: "Sem categoria" });
+    }
+  }
+  return map;
+}
+
+function bucketCategoria(
+  p: Pedido,
+  lookup: LookupProdutoCategoria
+): { id: string; nome: string } {
+  if (!p.produto_id) {
+    return { id: "__sem_produto__", nome: "Sem produto vinculado" };
+  }
+  const info = lookup.get(p.produto_id);
+  if (!info) {
+    return { id: "__produto_desconhecido__", nome: "Produto não encontrado" };
+  }
+  if (!info.categoriaId) {
+    return { id: "__sem_categoria__", nome: "Sem categoria" };
+  }
+  return { id: info.categoriaId, nome: info.categoriaNome };
+}
+
 function montarRelatorio(
   pedidos: Pedido[],
+  lookupProduto: LookupProdutoCategoria,
   inicioIso: string,
   fimIso: string
 ): RelatorioResposta {
@@ -73,6 +117,30 @@ function montarRelatorio(
     .sort((a, b) => b.receita - a.receita)
     .slice(0, 8);
 
+  const porCatAgg = new Map<string, RelatorioPorCategoria>();
+  for (const p of pedidos) {
+    const { id: bid, nome: blabel } = bucketCategoria(p, lookupProduto);
+    const atual = porCatAgg.get(bid) ?? {
+      id: bid,
+      nome: blabel,
+      receita: 0,
+      pedidos: 0,
+      unidades: 0,
+    };
+    atual.receita += Number(p.valor_total);
+    atual.pedidos += 1;
+    atual.unidades += Number(p.quantidade);
+    atual.nome = blabel;
+    porCatAgg.set(bid, atual);
+  }
+  const porCategoria: RelatorioPorCategoria[] = Array.from(porCatAgg.values())
+    .map((r) => ({
+      ...r,
+      receita: Math.round(r.receita * 100) / 100,
+    }))
+    .sort((a, b) => b.receita - a.receita)
+    .slice(0, 12);
+
   return {
     periodo: { inicio: inicioIso, fim: fimIso },
     resumo: {
@@ -85,6 +153,7 @@ function montarRelatorio(
     porStatus,
     serieTemporal,
     topItens,
+    porCategoria,
   };
 }
 
@@ -135,7 +204,25 @@ export async function GET(request: Request) {
       return NextResponse.json({ erro: error.message }, { status: 500 });
     }
 
-    const relatorio = montarRelatorio((data as Pedido[]) ?? [], inicio, fim);
+    const pedidos = (data as Pedido[]) ?? [];
+    const idsProduto = [
+      ...new Set(pedidos.map((p) => p.produto_id).filter((id): id is string => Boolean(id))),
+    ];
+
+    let lookup: LookupProdutoCategoria = new Map();
+    if (idsProduto.length > 0) {
+      const { data: prows, error: e2 } = await supabase
+        .from("produtos")
+        .select("id, categoria_id, categoria:categorias(id, nome)")
+        .in("id", idsProduto);
+
+      if (e2) {
+        return NextResponse.json({ erro: e2.message }, { status: 500 });
+      }
+      lookup = montarLookupProdutos(prows as ProdutoCatRow[] | null);
+    }
+
+    const relatorio = montarRelatorio(pedidos, lookup, inicio, fim);
     return NextResponse.json(relatorio);
   } catch (error) {
     const message =

@@ -7,7 +7,7 @@ Este arquivo foi criado como apoio rapido para apresentacao ao professor.
 "Meu projeto se chama **Barao das Bebidas**.
 Ele e um sistema web para gestao de pedidos, com dois perfis de acesso: **cliente** e **admin**.
 Foi desenvolvido com **Next.js 16 (App Router)**, **TypeScript** e **Supabase**.
-O objetivo principal e digitalizar o fluxo da loja: cadastro/autenticacao, criacao de pedidos, controle de estoque, administracao do sistema e **visao consolidada em relatorios** para o admin."
+O objetivo principal e digitalizar o fluxo da loja: cadastro/autenticacao, criacao de pedidos, **catalogo por categorias** no banco, controle de estoque, administracao do sistema e **visao consolidada em relatorios** para o admin."
 
 ## 2) Problema e Objetivo
 
@@ -21,13 +21,18 @@ O objetivo principal e digitalizar o fluxo da loja: cadastro/autenticacao, criac
 
 ### Cliente
 - Cadastro e login.
+- **Cardapio**: filtrar por categoria (chips) e buscar por nome; badge da categoria no card.
 - Criacao de pedido com validacoes.
+- **Modal do cardapio no pedido**: mesmos filtros por categoria + busca; ver categoria em cada item.
 - Selecao de itens e resumo antes da confirmacao.
 - Acompanhamento de status do pedido.
 
 ### Admin
 - Gerenciamento de pedidos (listar, atualizar status, excluir).
-- Gerenciamento de produtos (CRUD).
+- **Produtos e estoque** (menu curto na sidebar; titulo da tela: produtos, estoque e categorias):
+  - **CRUD de categorias** (nomes cadastrados no banco — sem lista fixa no codigo).
+  - **CRUD de produtos** com escolha de categoria (ou sem categoria).
+  - Secoes **Categorias** e **Produtos e estoque** podem ser **recolhidas**; preferencia em `localStorage` (padrao: abertas).
 - Gerenciamento de usuarios (alterar `role`).
 - **Relatorios** (so admin):
   - ultima aba do menu;
@@ -57,13 +62,15 @@ Fluxo tecnico:
 Tabelas principais:
 - `usuarios` (id, nome, email, role, senha_hash)
 - `auth_sessions` (user_id, token_hash, expires_at)
-- `produtos` (nome, preco, quantidade_estoque, foto_url)
+- **`categorias`** (id, nome unico)
+- `produtos` (nome, preco, quantidade_estoque, foto_url, **`categoria_id`** opcional → FK em `categorias`, `ON DELETE SET NULL`)
 - `pedidos` (usuario_id, produto_id, item, quantidade, valor_total, status)
 
 Regras importantes:
 - `role` com check (`admin`/`cliente`)
 - validacoes de quantidade/preco/valor
 - status controlado (`pendente`, `separacao`, `enviado`, `entregue`)
+- categorias editaveis apenas via admin/API; cliente so consome lista para filtro
 
 ## 6) Autenticacao e Seguranca
 
@@ -107,7 +114,8 @@ Pontos fortes:
 
 - Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
 - Pedidos: `GET /api/pedidos`, `POST /api/pedidos`, `PATCH /api/pedidos/:id`, `DELETE /api/pedidos/:id`, `GET /api/pedidos/me`
-- Produtos: `GET /api/produtos`, `POST /api/produtos`, `PATCH /api/produtos/:id`, `DELETE /api/produtos/:id`
+- Produtos: `GET /api/produtos` (com join de categoria), `POST/PATCH` com `categoria_id` opcional, `DELETE`
+- **Categorias**: `GET /api/categorias`, `POST /api/categorias`, `PATCH /api/categorias/:id`, `DELETE /api/categorias/:id` (admin nas mutacoes)
 - Usuarios: `GET /api/usuarios`, `PATCH /api/usuarios/:id`
 - Relatorios: `GET /api/relatorios?inicio=<ISO>&fim=<ISO>` (admin; agrega pedidos no intervalo)
 
@@ -121,18 +129,22 @@ Frase curta para falar na hora:
 - Feedback imediato com toasts (`sonner`).
 - Componentizacao com `shadcn` + Tailwind.
 - Graficos com `recharts`, legendas e paleta por status (CSS vars `--chart-status-*`).
+- Filtros de **categoria** no cardapio e no pedido (chips + busca).
+- Painel admin com blocos **recolhíveis** (localStorage).
 
-## 10) Roteiro de Demonstracao (3-4 min) — ajuste o tempo
+## 10) Roteiro de Demonstracao (3-5 min) — ajuste o tempo
 
 1. Cadastro/login.
 2. Mostrar diferenca de menu entre cliente e admin (cliente **nao** ve Relatorios).
-3. Como cliente: criar pedido (resumo + confirmacao).
-4. Como admin: alterar status do pedido; opcional: CRUD rapido de produto.
-5. **Relatorios**: abrir a **ultima** aba; alternar Hoje / Semana / Mes; mostrar pizza por status e grafico de receita; se der tempo, intervalo personalizado + Atualizar.
-6. Encerrar com logout e tentar acessar rota protegida (ou mencionar `proxy.ts`).
+3. Como cliente: abrir **Cardapio** — mostrar chips de categoria e busca; depois **Fazer pedidos** — modal com o mesmo tipo de filtro.
+4. Como admin: **Produtos e estoque** — criar ou citar categoria; associar produto a categoria; opcional: mostrar **recolher/expandir** secoes.
+5. Como admin: **Gerenciar pedidos** — alterar status (rapido).
+6. **Relatorios**: **ultima** aba; Hoje / Semana / Mes; pizza e receita; se der tempo, periodo personalizado.
+7. Encerrar com logout e rota protegida (ou `proxy.ts`).
 
-Dica de fala para o passo 5:
-- "Aqui o gestor fecha o ciclo: ve numeros do periodo, distribuicao de status e o que mais vendeu em valor, sem planilha."
+Dicas de fala:
+- Passo 3: "As categorias vêm do banco; o cliente filtra sem precisar ver lista enorme."
+- Passo 6 (relatorios): "Aqui o gestor fecha o ciclo: numeros do periodo, status e ranking de itens, sem planilha."
 
 ## 11) Limitacoes Atuais e Proximos Passos
 
@@ -143,7 +155,7 @@ Dica de fala para o passo 5:
 
 ## 12) Encerramento (20-30s)
 
-"Concluindo, o projeto entrega uma solucao funcional para operacao da loja, com autenticacao propria por sessao, RBAC, fluxo completo de pedidos e **painel de relatorios para decisao do admin**.
+"Concluindo, o projeto entrega uma solucao funcional para operacao da loja, com autenticacao propria por sessao, RBAC, **catalogo com categorias no PostgreSQL**, fluxo completo de pedidos e **painel de relatorios** para o admin.
 Os proximos passos focam em seguranca avancada, testes e escalabilidade."
 
 ## Perguntas Provaveis (com resposta curta)
@@ -160,6 +172,12 @@ Os proximos passos focam em seguranca avancada, testes e escalabilidade."
 
 **Cliente consegue ver relatorios?**
 - Nao: o item some do menu e a API `GET /api/relatorios` responde 403; se a aba ficasse presa no estado, o front redireciona para outra aba.
+
+**Quem cadastra categorias?**
+- So o **admin**, via API `POST/PATCH/DELETE /api/categorias`. O cliente so le a lista para filtrar cardapio e pedido.
+
+**O que acontece se eu apagar uma categoria?**
+- O registro some; produtos que usavam essa categoria ficam com `categoria_id` nulo (`ON DELETE SET NULL`).
 
 **Se o cookie for roubado?**
 - Cookie e HTTP-only e com expiracao; alem disso a sessao pode ser invalidada no banco.

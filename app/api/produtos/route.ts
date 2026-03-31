@@ -1,63 +1,85 @@
 import { NextResponse } from "next/server";
 import { obterUsuarioSessao } from "@/lib/auth";
-import type { CriarProdutoInput } from "@/lib/produtos";
+import type { CriarProdutoInput, ProdutoDbRow } from "@/lib/produtos";
+import { produtoFromDbRow } from "@/lib/produtos";
 import { createSupabaseApiClient } from "@/lib/supabase";
 
+const PRODUTO_SELECT = "*, categoria:categorias(id, nome)";
+
 export async function GET() {
-  const usuario = await obterUsuarioSessao();
-  if (!usuario) {
-    return NextResponse.json({ erro: "Nao autenticado." }, { status: 401 });
+  try {
+    const usuario = await obterUsuarioSessao();
+    if (!usuario) {
+      return NextResponse.json({ erro: "Nao autenticado." }, { status: 401 });
+    }
+
+    const supabase = createSupabaseApiClient();
+    const { data, error } = await supabase
+      .from("produtos")
+      .select(PRODUTO_SELECT)
+      .order("nome", { ascending: true });
+
+    if (error) {
+      return NextResponse.json({ erro: error.message }, { status: 500 });
+    }
+
+    const lista = (data as ProdutoDbRow[] | null) ?? [];
+    return NextResponse.json(lista.map(produtoFromDbRow));
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Erro inesperado ao listar produtos.";
+    return NextResponse.json({ erro: message }, { status: 500 });
   }
-
-  const supabase = createSupabaseApiClient();
-  const { data, error } = await supabase
-    .from("produtos")
-    .select("*")
-    .order("nome", { ascending: true });
-
-  if (error) {
-    return NextResponse.json({ erro: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data ?? []);
 }
 
 export async function POST(request: Request) {
-  const usuario = await obterUsuarioSessao();
-  if (!usuario) {
-    return NextResponse.json({ erro: "Nao autenticado." }, { status: 401 });
-  }
-  if (usuario.role !== "admin") {
-    return NextResponse.json({ erro: "Apenas admin pode cadastrar produtos." }, { status: 403 });
-  }
+  try {
+    const usuario = await obterUsuarioSessao();
+    if (!usuario) {
+      return NextResponse.json({ erro: "Nao autenticado." }, { status: 401 });
+    }
+    if (usuario.role !== "admin") {
+      return NextResponse.json({ erro: "Apenas admin pode cadastrar produtos." }, { status: 403 });
+    }
 
-  const body = (await request.json()) as Partial<CriarProdutoInput>;
-  if (!body.nome?.trim()) {
-    return NextResponse.json({ erro: "Nome do produto e obrigatorio." }, { status: 400 });
-  }
-  if (body.quantidade_estoque === undefined || Number(body.quantidade_estoque) < 0) {
-    return NextResponse.json({ erro: "Quantidade em estoque invalida." }, { status: 400 });
-  }
-  if (body.preco === undefined || Number(body.preco) < 0) {
-    return NextResponse.json({ erro: "Preco do produto invalido." }, { status: 400 });
-  }
+    const body = (await request.json()) as Partial<CriarProdutoInput>;
+    if (!body.nome?.trim()) {
+      return NextResponse.json({ erro: "Nome do produto e obrigatorio." }, { status: 400 });
+    }
+    if (body.quantidade_estoque === undefined || Number(body.quantidade_estoque) < 0) {
+      return NextResponse.json({ erro: "Quantidade em estoque invalida." }, { status: 400 });
+    }
+    if (body.preco === undefined || Number(body.preco) < 0) {
+      return NextResponse.json({ erro: "Preco do produto invalido." }, { status: 400 });
+    }
 
-  const supabase = createSupabaseApiClient();
-  const { data, error } = await supabase
-    .from("produtos")
-    .insert({
-      nome: body.nome.trim(),
-      descricao: body.descricao?.trim() || null,
-      preco: Number(body.preco),
-      quantidade_estoque: Number(body.quantidade_estoque),
-      foto_url: body.foto_url?.trim() || null,
-    })
-    .select("*")
-    .single();
+    const categoria_id =
+      body.categoria_id === undefined || body.categoria_id === null || body.categoria_id === ""
+        ? null
+        : String(body.categoria_id);
 
-  if (error) {
-    return NextResponse.json({ erro: error.message }, { status: 500 });
+    const supabase = createSupabaseApiClient();
+    const { data, error } = await supabase
+      .from("produtos")
+      .insert({
+        nome: body.nome.trim(),
+        descricao: body.descricao?.trim() || null,
+        preco: Number(body.preco),
+        quantidade_estoque: Number(body.quantidade_estoque),
+        foto_url: body.foto_url?.trim() || null,
+        categoria_id,
+      })
+      .select(PRODUTO_SELECT)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ erro: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(produtoFromDbRow(data as ProdutoDbRow), { status: 201 });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Erro inesperado ao criar produto.";
+    return NextResponse.json({ erro: message }, { status: 500 });
   }
-
-  return NextResponse.json(data, { status: 201 });
 }

@@ -12,6 +12,7 @@ Construído com **Next.js 16 (App Router)**, **TypeScript** e **Supabase**.
 - Visão geral
 - Funcionalidades
 - Relatórios (admin)
+- Categorias e produtos (referência técnica)
 - Arquitetura do projeto
 - Stack e dependências
 - Requisitos
@@ -29,7 +30,7 @@ Construído com **Next.js 16 (App Router)**, **TypeScript** e **Supabase**.
 O projeto permite:
 
 - clientes criarem pedidos e acompanharem status em tempo real;
-- admins gerenciarem cardápio, pedidos, relatórios e permissões de usuários;
+- admins gerenciarem **produtos, estoque, categorias**, pedidos, relatórios e permissões de usuários;
 - operação com autenticação própria baseada em sessão HTTP-only;
 - feedback de ações com toast (`sonner`) para create/update/delete.
 
@@ -46,8 +47,10 @@ O projeto permite:
 - Criação de pedido com:
   - dados de entrega,
   - seleção de itens do cardápio em modal,
+  - **filtros por categoria** (chips: Todas, Sem categoria, por nome da categoria) e busca por nome,
   - resumo antes da confirmação final,
   - validação de campos obrigatórios (incluindo telefone formatado).
+- **Cardápio** (visualização): mesmos filtros por categoria e busca; badge com categoria no card do produto.
 - Acompanhamento de pedidos com:
   - cards visuais,
   - trilha de status por etapa,
@@ -59,8 +62,10 @@ O projeto permite:
   - alteração de status,
   - exclusão,
   - indicadores de rastreio por status.
-- Gerenciamento de cardápio:
-  - criar, editar e excluir produtos.
+- **Produtos e estoque** (menu da sidebar; tela “Produtos, estoque e categorias”):
+  - CRUD de **categorias** (nome único no banco; exclusão desvincula produtos com `ON DELETE SET NULL`);
+  - CRUD de produtos com **categoria opcional**, preço, estoque e foto;
+  - seções **Categorias** e **Produtos e estoque** podem ser **recolhidas**; preferência salva em `localStorage` (abertas por padrão).
 - Gerenciamento de usuários:
   - alteração de role (`admin` / `cliente`).
 - Relatórios e indicadores:
@@ -82,6 +87,13 @@ O projeto permite:
 - Rota de agregação: `GET /api/relatorios?inicio=<ISO>&fim=<ISO>` — apenas admin autenticado.
 - Dados calculados a partir de `pedidos` no intervalo: resumo, série diária, distribuição por status, ranking de itens.
 - UI: `atoms/relatorios-dashboard.tsx`, estado em `hooks/use-relatorios-tab.ts`, tipos em `lib/relatorios.ts`.
+
+## Categorias e produtos (referência técnica)
+
+- Tabela `categorias`; `produtos.categoria_id` opcional com FK e `ON DELETE SET NULL`.
+- UI admin: `atoms/gerenciar-produtos-estoque.tsx`; filtros reutilizáveis no cardápio e no pedido: `atoms/categoria-filtro-chips.tsx`.
+- Tipos: `lib/categorias.ts`, `lib/produtos.ts` (produto inclui `categoria_id` e objeto `categoria` resumido quando o join vem da API).
+- `useCardapioTab` carrega **produtos** e **categorias** em paralelo.
 
 ## Arquitetura do projeto
 
@@ -146,7 +158,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 
 - `supabase/schema.sql`
 
-> O script cria tabelas, constraints e políticas necessárias para o fluxo atual.
+> O script cria tabelas (`usuarios`, `auth_sessions`, `pedidos`, `produtos`, **`categorias`**), relacionamento **produto → categoria**, constraints e políticas RLS usadas no fluxo atual.
 
 ## Executando o projeto
 
@@ -192,10 +204,17 @@ Ambiente de produção:
 
 ### Produtos
 
-- `GET /api/produtos` - lista produtos autenticado
-- `POST /api/produtos` - cria produto (admin)
-- `PATCH /api/produtos/:id` - atualiza produto (admin)
+- `GET /api/produtos` - lista produtos (autenticado), com join `categoria` quando existir
+- `POST /api/produtos` - cria produto (admin); corpo aceita `categoria_id` opcional
+- `PATCH /api/produtos/:id` - atualiza produto (admin); pode definir ou limpar `categoria_id`
 - `DELETE /api/produtos/:id` - remove produto (admin)
+
+### Categorias
+
+- `GET /api/categorias` - lista categorias (autenticado), ordenadas por nome
+- `POST /api/categorias` - cria categoria (admin)
+- `PATCH /api/categorias/:id` - atualiza nome (admin)
+- `DELETE /api/categorias/:id` - exclui categoria (admin); produtos perdem o vínculo
 
 ### Usuários
 
@@ -234,6 +253,7 @@ app/
       pedidos/
       relatorios/
       produtos/
+      categorias/
       usuarios/
   auth/
   layout.tsx
@@ -253,3 +273,5 @@ README.md
 - Confirmação em modal com resumo antes de enviar pedido.
 - Toasts globais (`sonner`) para sucesso/erro em create/update/delete.
 - Painel de **relatórios** com card de filtros, gráficos com legenda e paleta por status (não monocromática).
+- **Categorias** dinâmicas (sem lista fixa no código): filtros em cardápio e no modal do pedido; admin com CRUD de categorias e atribuição por produto.
+- Painel admin **Produtos e estoque**: blocos recolhíveis com estado persistido no **localStorage** (padrão expandido).
