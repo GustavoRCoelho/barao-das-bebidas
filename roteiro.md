@@ -136,10 +136,12 @@ Frase curta para falar na hora:
 - Filtros de **categoria** no cardapio e no pedido (chips + busca).
 - Painel admin com blocos **recolhíveis** (localStorage).
 - Tabelas de gestao com visual **alinhado** (mesmo padrao de cabecalho e area rolavel que produtos/estoque); loading dedicado nas listas de pedidos e usuarios.
+- **Cardapio:** tela de carregamento (`cardapio-loading`) ate os dados chegarem.
+- **Testes E2E (Cypress):** spec `cypress/e2e/jornada-cliente.cy.ts` cobre cadastro, login, cardapio, favorito, pedido com tres itens e acompanhar; `npm run cypress:open` abre a janela do runner (precisa `npm run dev` e produtos com estoque no banco).
 
 ## 10) Roteiro de Demonstracao (3-5 min) — ajuste o tempo
 
-1. Cadastro/login.
+1. Cadastro/login (opcional na apresentacao: rodar **Cypress** com `npm run dev` + `npm run cypress:open` e mostrar o fluxo automatico no runner).
 2. Mostrar diferenca de menu entre cliente e admin (cliente **nao** ve Relatorios).
 3. Como cliente: abrir **Cardapio** — chips de categoria, busca e **favoritos** (marcar um produto, ativar **So favoritos**); depois **Fazer pedidos** — modal com o mesmo tipo de filtro e favoritos.
 4. Como admin: **Produtos e estoque** — criar ou citar categoria; associar produto a categoria; opcional: mostrar **recolher/expandir** secoes.
@@ -156,7 +158,7 @@ Dicas de fala:
 
 - Mover URL/chaves Supabase para variaveis de ambiente.
 - Endurecer politicas RLS no banco (evitar permissoes excessivas para `anon`).
-- Adicionar testes automatizados (unitarios e integrados).
+- Ampliar testes automatizados (unitarios e integrados além do E2E Cypress existente).
 - Criar auditoria/log de acoes administrativas.
 
 ## 12) Encerramento (20-30s)
@@ -190,4 +192,7 @@ Os proximos passos focam em seguranca avancada, testes e escalabilidade."
 
 **Se o cookie for roubado?**
 - Cookie e HTTP-only e com expiracao; alem disso a sessao pode ser invalidada no banco.
+
+**Tem teste automatico da aplicacao?**
+- Sim: **Cypress** com o spec `jornada-cliente.cy.ts` (cadastro, logout, login, cardapio, favorito, pedido com tres produtos, confirmar, acompanhar). Comando interativo: `npm run cypress:open` (com `npm run dev` em outro terminal). E preciso ter **pelo menos tres produtos com estoque** no Supabase para o pedido passar na API.
 

@@ -19,6 +19,7 @@ Construído com **Next.js 16 (App Router)**, **TypeScript** e **Supabase**.
 - Configuração do ambiente
 - Executando o projeto
 - Scripts disponíveis
+- Testes E2E (Cypress)
 - Endpoints da API
 - Regras de acesso (RBAC)
 - Sessão e segurança
@@ -142,6 +143,10 @@ Fluxo típico:
 - `tailwind-merge`
 - `tw-animate-css`
 
+### Desenvolvimento / QA
+
+- `cypress` (testes end-to-end no navegador)
+
 ## Requisitos
 
 - Node.js 20+ (recomendado)
@@ -189,6 +194,20 @@ Ambiente de produção:
 - `npm run build`: build de produção
 - `npm run start`: sobe build de produção
 - `npm run lint`: validação com ESLint
+- `npm run cypress:open`: abre o Cypress em modo interativo (ideal para demonstrar o fluxo na janela do runner)
+- `npm run cypress:run` ou `npm run test:e2e`: executa os testes E2E em modo headless (terminal)
+
+## Testes E2E (Cypress)
+
+- Configuração: `cypress.config.ts` (`baseUrl`: `http://localhost:3000`).
+- Spec principal: `cypress/e2e/jornada-cliente.cy.ts` — fluxo **cadastro** (e-mail único `@gmail.com`, senha `123123`) → **logout** → **login** → **cardápio** (favoritar um produto) → **pedido** com três produtos no modal → **confirmar** → **acompanhar pedidos**.
+- Suporte: `cypress/support/e2e.ts` (tratamento leve de exceções não críticas, ex.: `ResizeObserver`).
+
+**Como rodar (modo janela):** em um terminal `npm run dev`; em outro `npm run cypress:open` → **E2E Testing** → escolha o spec → **Run**.
+
+**Pré-requisitos do spec:** Supabase acessível (mesmo `.env.local` do app) e **pelo menos três produtos com estoque ≥ 1** no cardápio (a API valida estoque ao criar o pedido).
+
+**Página `/auth` (cadastro):** há `data-testid` nos gatilhos das abas (`auth-tab-login`, `auth-tab-cadastro`), no formulário (`auth-form-cadastro`) e no campo nome (`auth-input-nome`). O painel de cadastro usa `forceMount` no `TabsContent` (Radix) para o formulário permanecer no DOM e os testes/localizadores ficarem estáveis.
 
 ## Endpoints da API
 
@@ -282,10 +301,14 @@ app/
   layout.tsx
   page.tsx
 atoms/
+cypress/
+  e2e/
+  support/
 hooks/
 lib/          # inclui pedidos-listagem.ts, relatorios.ts, usuarios-admin.ts, etc.
 public/
 supabase/
+cypress.config.ts
 README.md
 ```
 
@@ -300,4 +323,6 @@ README.md
 - Painel admin **Produtos e estoque**: blocos recolhíveis com estado persistido no **localStorage** (padrão expandido); **paginação** na tabela de produtos após filtros locais.
 - **Paginação** em **Gerenciar pedidos**, **Acompanhar pedidos** e **Gerenciar usuários** (API); refetch silencioso após ações para não bloquear a tabela com loading completo quando faz sentido.
 - Tabelas administrativas com **estilo unificado** (cabeçalho `muted/50`, borda arredondada na área rolável, tipografia consistente com a grade de produtos).
-- **Produtos favoritos** por usuário (`produto_favoritos` no banco): favoritar na aba **Cardápio** e no **modal do pedido**, com filtro **“Só favoritos”**; persistência via `/api/favoritos` e estado em `useFavoritosProdutos`. 
+- **Produtos favoritos** por usuário (`produto_favoritos` no banco): favoritar na aba **Cardápio** e no **modal do pedido**, com filtro **“Só favoritos”**; persistência via `/api/favoritos` e estado em `useFavoritosProdutos`.
+- **Cardápio:** estado de carregamento dedicado (`atoms/cardapio-loading.tsx`) enquanto `useCardapioTab` busca produtos e categorias.
+- **Testes E2E** com Cypress (`cypress/e2e/jornada-cliente.cy.ts`), incluindo fluxo completo de cliente para demonstração no runner.

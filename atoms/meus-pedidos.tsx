@@ -137,6 +137,7 @@ export function MeusPedidos({
                   return (
                     <article
                       key={pedido.id}
+                      data-testid="e2e-meus-pedido-card"
                       className="rounded-2xl border border-border bg-background/80 p-4 transition-colors hover:bg-muted/20"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">

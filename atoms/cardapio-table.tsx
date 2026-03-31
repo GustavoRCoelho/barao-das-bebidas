@@ -123,7 +123,11 @@ export function CardapioTable({
           <div className="max-h-[65vh] overflow-y-auto pr-1">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {produtosFiltrados.map((produto) => (
-                <article key={produto.id} className="app-soft-panel overflow-hidden">
+                <article
+                  key={produto.id}
+                  data-testid="e2e-cardapio-produto-card"
+                  className="app-soft-panel overflow-hidden"
+                >
                   <div className="bg-muted/40 relative flex h-40 items-center justify-center border-b">
                     {favoritosHabilitado && onToggleFavoritoProduto ? (
                       <div className="absolute top-2 right-2 z-10">

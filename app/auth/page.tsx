@@ -156,12 +156,14 @@ export default function AuthPage() {
               <TabsList className="grid w-full grid-cols-2 bg-muted text-muted-foreground ring-1 ring-border">
                 <TabsTrigger
                   value="login"
+                  data-testid="auth-tab-login"
                   className="data-active:bg-primary data-active:text-primary-foreground"
                 >
                   Login
                 </TabsTrigger>
                 <TabsTrigger
                   value="cadastro"
+                  data-testid="auth-tab-cadastro"
                   className="data-active:bg-primary data-active:text-primary-foreground"
                 >
                   Cadastro
@@ -220,14 +222,19 @@ export default function AuthPage() {
                 </form>
               </TabsContent>
 
-              <TabsContent value="cadastro">
-                <form className="space-y-4 rounded-2xl border border-border bg-card/70 p-4" onSubmit={cadastrar}>
+              <TabsContent value="cadastro" forceMount>
+                <form
+                  data-testid="auth-form-cadastro"
+                  className="space-y-4 rounded-2xl border border-border bg-card/70 p-4"
+                  onSubmit={cadastrar}
+                >
                   <div className="space-y-1.5">
                     <Label htmlFor="nome">Nome</Label>
                     <div className="relative">
                       <User className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         id="nome"
+                        data-testid="auth-input-nome"
                         name="nome"
                         required
                         placeholder="Seu nome completo"
