@@ -300,4 +300,5 @@ README.md
 - Painel admin **Produtos e estoque**: blocos recolhíveis com estado persistido no **localStorage** (padrão expandido); **paginação** na tabela de produtos após filtros locais.
 - **Paginação** em **Gerenciar pedidos**, **Acompanhar pedidos** e **Gerenciar usuários** (API); refetch silencioso após ações para não bloquear a tabela com loading completo quando faz sentido.
 - Tabelas administrativas com **estilo unificado** (cabeçalho `muted/50`, borda arredondada na área rolável, tipografia consistente com a grade de produtos).
-- **Produtos favoritos** por usuário (`produto_favoritos` no banco): favoritar na aba **Cardápio** e no **modal do pedido**, com filtro **“Só favoritos”**; persistência via `/api/favoritos` e estado em `useFavoritosProdutos`.
+- **Produtos favoritos** por usuário (`produto_favoritos` no banco): favoritar na aba **Cardápio** e no **modal do pedido**, com filtro **“Só favoritos”**; persistência via `/api/favoritos` e estado em `useFavoritosProdutos`. 
+- 
