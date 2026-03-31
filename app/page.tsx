@@ -12,6 +12,7 @@ import { SidebarNav } from "@/atoms/sidebar-nav";
 import { StatCard } from "@/atoms/stat-card";
 import {
   AlertCircle,
+  BarChart3,
   Beer,
   BookOpen,
   ClipboardList,
@@ -34,6 +35,8 @@ import type { Produto } from "@/lib/produtos";
 import type { PedidoStatus } from "@/lib/pedidos";
 import { GerenciarUsuarios } from "@/atoms/gerenciar-usuarios";
 import { MeusPedidos } from "@/atoms/meus-pedidos";
+import { RelatoriosDashboard } from "@/atoms/relatorios-dashboard";
+import { useRelatoriosTab } from "@/hooks/use-relatorios-tab";
 
 type UsuarioInfo = {
   nome: string;
@@ -46,6 +49,7 @@ type Aba =
   | "acompanhar"
   | "gerenciar-cardapio"
   | "gerenciar"
+  | "relatorios"
   | "gerenciar-usuarios";
 
 const STATUS_OPTIONS: PedidoStatus[] = ["pendente", "separacao", "enviado", "entregue"];
@@ -129,6 +133,12 @@ export default function HomePage() {
     activeTab: abaAtiva,
   });
 
+  const relatoriosTab = useRelatoriosTab({
+    onError: handleError,
+    isAdmin: usuario?.role === "admin",
+    activeTab: abaAtiva,
+  });
+
   const handlePedidoFormChange = useCallback(
     (field: keyof PedidoFormState, value: string) => {
       criarPedidoTab.setForm((current) => {
@@ -173,6 +183,20 @@ export default function HomePage() {
     });
   }, [usuario?.nome, criarPedidoTab.setForm]);
 
+  useEffect(() => {
+    if (!usuario || usuario.role === "admin") return;
+    if (abaAtiva === "relatorios") {
+      setAbaAtiva("criar");
+    }
+  }, [usuario, abaAtiva]);
+
+  function selecionarAba(id: Aba) {
+    if (id === "relatorios" && usuario?.role !== "admin") {
+      return;
+    }
+    setAbaAtiva(id);
+  }
+
   async function sair() {
     setSaindo(true);
     await fetch("/api/auth/logout", { method: "POST" });
@@ -188,6 +212,7 @@ export default function HomePage() {
         { id: "gerenciar-cardapio" as const, label: "Gerenciar cardápio", icon: Settings2 },
         { id: "gerenciar" as const, label: "Gerenciar pedidos", icon: ClipboardList },
         { id: "gerenciar-usuarios" as const, label: "Gerenciar usuários", icon: UserCog },
+        { id: "relatorios" as const, label: "Relatórios", icon: BarChart3 },
       ]
       : []),
   ];
@@ -206,8 +231,17 @@ export default function HomePage() {
       >
         <SidebarNav
           menu={menu}
-          abaAtiva={abaAtiva as "cardapio" | "criar" | "gerenciar-cardapio" | "gerenciar" | "gerenciar-usuarios"}
-          onSelectAba={(id) => setAbaAtiva(id as Aba)}
+          abaAtiva={
+            abaAtiva as
+              | "cardapio"
+              | "criar"
+              | "acompanhar"
+              | "gerenciar-cardapio"
+              | "gerenciar"
+              | "relatorios"
+              | "gerenciar-usuarios"
+          }
+          onSelectAba={(id) => selecionarAba(id as Aba)}
           usuarioNome={usuario?.nome}
           usuarioRole={usuario?.role}
           saindo={saindo}
@@ -301,6 +335,19 @@ export default function HomePage() {
                   loading={gerenciarUsuariosTab.loading}
                   updatingId={gerenciarUsuariosTab.updatingId}
                   onRoleChange={gerenciarUsuariosTab.atualizarRole}
+                />
+              ) : abaAtiva === "relatorios" && usuario?.role === "admin" ? (
+                <RelatoriosDashboard
+                  data={relatoriosTab.data}
+                  loading={relatoriosTab.loading}
+                  periodo={relatoriosTab.periodo}
+                  onPeriodoChange={relatoriosTab.setPeriodo}
+                  customInicio={relatoriosTab.customInicio}
+                  customFim={relatoriosTab.customFim}
+                  onCustomInicioChange={relatoriosTab.setCustomInicio}
+                  onCustomFimChange={relatoriosTab.setCustomFim}
+                  intervalo={relatoriosTab.intervalo}
+                  onRefresh={relatoriosTab.refetch}
                 />
               ) : (
                 <PedidoTable

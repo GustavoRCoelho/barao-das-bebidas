@@ -11,6 +11,7 @@ Construído com **Next.js 16 (App Router)**, **TypeScript** e **Supabase**.
 
 - Visão geral
 - Funcionalidades
+- Relatórios (admin)
 - Arquitetura do projeto
 - Stack e dependências
 - Requisitos
@@ -28,7 +29,7 @@ Construído com **Next.js 16 (App Router)**, **TypeScript** e **Supabase**.
 O projeto permite:
 
 - clientes criarem pedidos e acompanharem status em tempo real;
-- admins gerenciarem cardápio, pedidos e permissões de usuários;
+- admins gerenciarem cardápio, pedidos, relatórios e permissões de usuários;
 - operação com autenticação própria baseada em sessão HTTP-only;
 - feedback de ações com toast (`sonner`) para create/update/delete.
 
@@ -62,6 +63,12 @@ O projeto permite:
   - criar, editar e excluir produtos.
 - Gerenciamento de usuários:
   - alteração de role (`admin` / `cliente`).
+- Relatórios e indicadores:
+  - aba exclusiva para **admin** (API e interface);
+  - filtros de período: hoje, semana, mês e intervalo personalizado;
+  - cartões com resumo (pedidos, receita, ticket médio, unidades);
+  - gráficos com **Recharts** (receita ao longo do tempo, pedidos por status, volume diário, top itens);
+  - cores de status alinhadas ao tema (`--chart-status-*` em `globals.css`).
 
 ### UX/UI
 
@@ -69,6 +76,12 @@ O projeto permite:
 - Sidebar em modo gaveta no celular.
 - Feedback com toasts de sucesso/erro para operações críticas.
 - Tema e componentes base com `shadcn` + Tailwind.
+
+## Relatórios (admin)
+
+- Rota de agregação: `GET /api/relatorios?inicio=<ISO>&fim=<ISO>` — apenas admin autenticado.
+- Dados calculados a partir de `pedidos` no intervalo: resumo, série diária, distribuição por status, ranking de itens.
+- UI: `atoms/relatorios-dashboard.tsx`, estado em `hooks/use-relatorios-tab.ts`, tipos em `lib/relatorios.ts`.
 
 ## Arquitetura do projeto
 
@@ -98,6 +111,7 @@ Fluxo típico:
 - `@supabase/ssr`
 - `sonner`
 - `lucide-react`
+- `recharts` / `date-fns` / `react-day-picker` (relatórios e datas)
 
 ### UI
 
@@ -172,6 +186,10 @@ Ambiente de produção:
 - `DELETE /api/pedidos/:id` - remove pedido (admin)
 - `GET /api/pedidos/me` - pedidos do usuário logado
 
+### Relatórios
+
+- `GET /api/relatorios` - agregados do período (`inicio`, `fim` em ISO 8601; **admin**)
+
 ### Produtos
 
 - `GET /api/produtos` - lista produtos autenticado
@@ -191,7 +209,7 @@ Ambiente de produção:
   - acompanhar os próprios pedidos
 - `admin`:
   - tudo de cliente
-  - gerenciar pedidos, produtos e usuários
+  - gerenciar pedidos, produtos, usuários e **relatórios** (aba e API restritas a admin)
 
 Regra de bootstrap:
 
@@ -211,11 +229,12 @@ Regra de bootstrap:
 
 ```text
 app/
-  api/
-    auth/
-    pedidos/
-    produtos/
-    usuarios/
+    api/
+      auth/
+      pedidos/
+      relatorios/
+      produtos/
+      usuarios/
   auth/
   layout.tsx
   page.tsx
@@ -233,3 +252,4 @@ README.md
 - Confirmação em modal para logout.
 - Confirmação em modal com resumo antes de enviar pedido.
 - Toasts globais (`sonner`) para sucesso/erro em create/update/delete.
+- Painel de **relatórios** com card de filtros, gráficos com legenda e paleta por status (não monocromática).

@@ -24,6 +24,7 @@ type MenuItem = {
     | "acompanhar"
     | "gerenciar-cardapio"
     | "gerenciar"
+    | "relatorios"
     | "gerenciar-usuarios";
   label: string;
   icon: LucideIcon;
@@ -37,6 +38,7 @@ type SidebarNavProps = {
     | "acompanhar"
     | "gerenciar-cardapio"
     | "gerenciar"
+    | "relatorios"
     | "gerenciar-usuarios";
   onSelectAba: (
     id:
@@ -45,6 +47,7 @@ type SidebarNavProps = {
       | "acompanhar"
       | "gerenciar-cardapio"
       | "gerenciar"
+      | "relatorios"
       | "gerenciar-usuarios"
   ) => void;
   usuarioNome?: string;

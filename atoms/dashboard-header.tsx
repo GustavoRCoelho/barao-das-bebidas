@@ -9,6 +9,7 @@ type DashboardHeaderProps = {
     | "acompanhar"
     | "gerenciar-cardapio"
     | "gerenciar"
+    | "relatorios"
     | "gerenciar-usuarios";
   totalFaturado: string;
   totalPedidos: number;
@@ -39,6 +40,8 @@ export function DashboardHeader({
                 ? "Acompanhar Pedidos"
               : abaAtiva === "gerenciar-usuarios"
                 ? "Administração de Usuários"
+              : abaAtiva === "relatorios"
+                ? "Relatórios e indicadores"
               : "Gestão de Pedidos"}
         </h1>
       </div>
