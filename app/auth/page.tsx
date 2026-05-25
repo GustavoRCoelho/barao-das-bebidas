@@ -109,6 +109,7 @@ export default function AuthPage() {
             alt="Loja Barão das Bebidas"
             fill
             priority
+            sizes="(min-width: 768px) 55vw, 100vw"
             className="object-cover"
           />
           <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/45 to-black/70 dark:from-black/40 dark:via-black/55 dark:to-black/75" />
@@ -222,7 +223,7 @@ export default function AuthPage() {
                 </form>
               </TabsContent>
 
-              <TabsContent value="cadastro" forceMount>
+              <TabsContent value="cadastro">
                 <form
                   data-testid="auth-form-cadastro"
                   className="space-y-4 rounded-2xl border border-border bg-card/70 p-4"

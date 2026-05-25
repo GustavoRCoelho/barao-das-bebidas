@@ -15,7 +15,7 @@ describe("Jornada do cliente — demonstração", () => {
     const mail = email();
 
     cy.visit("/auth");
-    /** Com `forceMount` no painel de cadastro o formulário fica no DOM; o clique torna o campo visível para digitar. */
+    /** Por padrão o painel de cadastro só é montado quando a aba fica ativa; o clique habilita os campos. */
     cy.get('[data-testid="auth-tab-cadastro"]', { timeout: 30_000 }).should("be.visible").click();
     cy.get('[data-testid="auth-input-nome"]', { timeout: 30_000 })
       .should("exist")
